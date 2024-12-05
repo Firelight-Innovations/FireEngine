@@ -13,8 +13,6 @@
 # USING, 'arcade'
 
 # Imports
-from asyncio.windows_events import NULL
-from turtle import color
 import arcade
 import arcade.color
 import arcade.color
@@ -23,9 +21,14 @@ import math
 import random
 import os
 import time
-from PIL import Image, ImageDraw
-from matplotlib.pylab import rand
-from pyparsing import col
+from PIL import Image
+import sys
+
+# Importing other scripts
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Code"))
+from Code import scene
+from Code import resource_loading as res_load
+from Code import sprite
 
 # Wall: '█'
 # Door: '░'
@@ -33,22 +36,6 @@ from pyparsing import col
 # Empty Space: ' '
 # Player Spawn:'*'
 # Enemy Spawn: '$'
-
-mapData = ['██████████████▓██████████████████████',
-           '█   █   $█  ██  █   $    █ █        █',
-           '█*  ▓  $ ▓   $  █        ▓ ▓   $    █',
-           '█   █    █  ██ $██████████ █     $  █',
-           '██▓███████████▓███████████ ██████████',
-           '█      $ █ $    █   $    ▓$▓     $  █',
-           '█    $   █     $█        █ █  $     █',
-           '█▓█████████████▓██████████▓██████████',
-           '█    $            $           $     █',
-           '████▓████▓███████▓███▓████▓██████████',
-           '█  $   █       █   █   $█  $      $ █',
-           '█  █   █  $█   █   █    █         $ █',
-           '█  █   █   █   █ $ █    █   $       █',
-           '█ $█ $     █$ $█   █ $  █       $   █',
-           '█████████████████████████████████████']
 
 # Constants
 SCREEN_WIDTH = 800
@@ -64,445 +51,13 @@ NUM_RAYS = 200     # Number of rays casted for rendering
 # Get the directory of the current script
 DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Assets")
 
-def get_player_spawn(self):
-    x = 0
-    y = 0
-
-    for row_index, row in enumerate(mapData):
-        for col_index, tile in enumerate(row):
-            x = col_index
-            y = row_index# Invert y-axis to match screencoordinates
-            if tile == '*':  # Player Spawn
-                return x + 0.5, y + 0.5
-
-def delete_all_files_in_directory(directory_path):
-    try:
-        # List all files in the directory
-        for filename in os.listdir(directory_path):
-            file_path = os.path.join(directory_path, filename)
-            # Check if it's a file before deleting
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-    except Exception as e:
-        return
-
-# Resource loading
-def load_animation(folder_path, return_paths=False):
-    """Load all animation frames from the specified folder."""
-    frames = []
-    paths = []
-    for file in sorted(os.listdir(folder_path)):  # Sort ensures frames are in order
-        if file.endswith(".png"):  # Only load PNG files
-            full_path = os.path.join(folder_path, file)
-            frames.append(arcade.load_texture(full_path))
-            paths.append(full_path)
-    
-    if return_paths:
-        return frames, paths
-    else:
-        return frames
-    
-def load_folder_sounds(folder_path):
-    """Load all gore/scream sounds from the specified folder."""
-    folder_contents = []
-    for file in os.listdir(folder_path):
-        if file.endswith(('.wav', '.mp3')):  # Filter for valid audio files
-            full_path = os.path.join(folder_path, file)
-            folder_contents.append(arcade.load_sound(full_path))
-    return folder_contents
-
-class Sprite:
-    def __init__(self, x, y, rotation, hitbox_x, hitbox_y, sprite_sheet_path, health=math.inf):
-        self.x = float(x + 0.5)
-        self.y = float(y + 0.5)
-        self.rotation = rotation
-        self.animation_rotation = 0
-        self.hitbox_x = float(hitbox_x)
-        self.hitbox_y = float(hitbox_y)
-        self.health = health
-        self.sprite_sheet_path = sprite_sheet_path
-        
-        self.walk_ani_0, self.walk_ani_0_path, self.walk_ani_45, self.walk_ani_45_path, self.walk_ani_90, self.walk_ani_90_path, self.walk_ani_135, self.walk_ani_135_path, self.walk_ani_180, self.walk_ani_180_path, self.walk_ani_225, self.walk_ani_225_path, self.walk_ani_270, self.walk_ani_270_path, self.walk_ani_315, self.walk_ani_315_path, self.shoot_ani, self.shoot_ani_path, self.death_ani, self.death_ani_path = self.load_animations(self.sprite_sheet_path)
-
-        # Death animation properties
-        self.death_animation = self.death_ani or []
-        self.is_dying = False
-        self.current_death_frame = 0
-        self.death_timer = 0
-        self.death_frame_duration = 0.2  # Time (in seconds) per frame
-
-        self.patrol_timer = random.uniform(1, 3)  # Time to move from current spot to the other
-        self.patrol_wait = random.uniform(1, 3) # Time to wait between movements
-        self.target_x = None
-        self.target_y = None
-
-        self.max_detect_distance = 4.5
-
-        # Walking animation
-        self.is_walking = False
-        self.current_walk_frame = 0
-        self.walk_timer = 0
-        self.walk_frame_duration = .2
-
-        # Shooting animation
-        self.is_shooting = False
-        self.current_shoot_frame = 0
-        self.shoot_timer = 0
-        self.fire_frame_duration = 0.1
-        self.no_fire_frame_duration = random.uniform(1, 8) / 10
-
-        # Audio
-        self.gun_shot = arcade.load_sound(os.path.join(DIR, "Sounds\\Enemies\\Gun\\Pistol Single Shot.wav"))
-
-        # Textures
-        self.texture = self.shoot_ani[1]
-        self.texture_path = self.shoot_ani_path[1]
-
-        # Load gore/scream sounds
-        self.gore_sounds = load_folder_sounds(os.path.join(DIR, "Sounds\\Enemies\\Gore"))
-
-        # Load specific death sound
-        self.scream_sounds = load_folder_sounds(os.path.join(DIR, "Sounds\\Enemies\\Scream"))
-
-        # Load specific death sound
-        self.death_sound = load_folder_sounds(os.path.join(DIR, "Sounds\\Enemies\\Death"))
-
-    def load_animations(self, path):
-        '''Loads all animations and textures from a sprite sheet'''
-        walk_ani_0 = []
-        walk_ani_0_path = []
-        walk_ani_45 = []
-        walk_ani_45_path = []
-        walk_ani_90 = []
-        walk_ani_90_path = []
-        walk_ani_135 = []
-        walk_ani_135_path = []
-        walk_ani_180 = []
-        walk_ani_180_path = []
-        walk_ani_225 = []
-        walk_ani_225_path = []
-        walk_ani_270 = []
-        walk_ani_270_path = []
-        walk_ani_315 = []
-        walk_ani_315_path = []
-        shoot_ani = []
-        shoot_ani_path = []
-        death_ani = []
-        death_ani_path = []
-
-        # Load sheet
-        sheet = arcade.load_texture(path)
-        height, width = sheet.height, sheet.width
-
-        # Splice sheet
-        # Load all shoot_ani
-
-        y = height - 64
-
-        # Scans file from the very bottom to the very top
-        # Loops through all rows in sprite sheet
-        for i in range(0, round(height / 65)):
-            # Loops through row
-            loop = True
-            x = 0 # x-val for sprite sheet
-            j = 0 # index of sprite for that row, used to seperarate walk cycle angles
-            while loop:
-                try:
-                    texture = arcade.load_texture(
-                        path,
-                        x=x,
-                        y=y,
-                        width=64,
-                        height=64
-                    )
-                    x += 65
-
-                    # Check if all pixels are fully transparent
-                    image = texture.image
-                    loop = not all(pixel == (0, 0, 0, 0) for pixel in image.getdata())
-                    if loop:
-                        output_folder = os.path.join(DIR, "Cache")
-                        output_file = f"{x}{y}{i}{j}-{height * random.randint(0, 10)}.png"
-
-                        # Ensure the folder exists
-                        os.makedirs(output_folder, exist_ok=True)
-
-                        # Save the image to the specified folder
-                        output_path = os.path.join(output_folder, output_file)
-                        image.save(output_path)
-
-                        if i == 0:
-                            shoot_ani.append(texture)
-                            shoot_ani_path.append(output_path)
-                        elif i == 1:
-                            death_ani.append(texture)
-                            death_ani_path.append(output_path)
-                        elif i > 1:
-                            if j == 0:
-                                walk_ani_0.append(texture)
-                                walk_ani_0_path.append(output_path)
-                            elif j == 1:
-                                walk_ani_45.append(texture)
-                                walk_ani_45_path.append(output_path)
-                            elif j == 2:
-                                walk_ani_90.append(texture)
-                                walk_ani_90_path.append(output_path)
-                            elif j == 3:
-                                walk_ani_135.append(texture)
-                                walk_ani_135_path.append(output_path)
-                            elif j == 4:
-                                walk_ani_180.append(texture)
-                                walk_ani_180_path.append(output_path)
-                            elif j == 5:
-                                walk_ani_225.append(texture)
-                                walk_ani_225_path.append(output_path)
-                            elif j == 6:
-                                walk_ani_270.append(texture)
-                                walk_ani_270_path.append(output_path)
-                            elif j == 7:
-                                walk_ani_315.append(texture)
-                                walk_ani_315_path.append(output_path)
-                except:
-                    loop = False
-                
-                j += 1
-
-            y -= 65
-
-        self.texture = walk_ani_0[0]
-
-        # Reversed lists before returning values
-        return walk_ani_0[::-1], walk_ani_0_path[::-1], walk_ani_45[::-1], walk_ani_45_path[::-1], walk_ani_90[::-1], walk_ani_90_path[::-1], walk_ani_135[::-1], walk_ani_135_path[::-1], walk_ani_180[::-1], walk_ani_180_path[::-1], walk_ani_225[::-1], walk_ani_225_path[::-1], walk_ani_270[::-1], walk_ani_270_path[::-1], walk_ani_315[::-1], walk_ani_315_path[::-1], shoot_ani, shoot_ani_path, death_ani, death_ani_path
-
-    def update_texture(self, player_x, player_y):
-        '''Updates the enemies texture based on a rotation, movement, and status.'''
-         # Step 1: Calculate direction vector from enemy to player
-        dx = player_x - self.x
-        dy = player_y - self.y
-
-        # Walking animation
-        if self.is_walking:
-            i = self.current_walk_frame
-        else:
-            i = 0
-
-        # Step 2: Calculate angle from enemy to player
-        angle_to_player = math.atan2(dy, dx)
-
-        # Step 3: Calculate relative angle (difference between enemy rotation and angle_to_player)
-        relative_angle = angle_to_player - self.rotation
-
-        # Normalize relative_angle to range [0, 2π]
-        relative_angle = (relative_angle + math.pi * 2) % (math.pi * 2)
-
-        # Step 4: Determine which texture to use based on 45° segments
-        if 0 <= relative_angle < math.pi / 8 or 15 * math.pi / 8 <= relative_angle < 2 * math.pi: # Correct
-            # Front (0°)
-            self.texture = self.walk_ani_0[i]
-            self.texture_path = self.walk_ani_0_path[i]
-        elif (9 * math.pi / 8) + (math.pi / 2) <= relative_angle < (11 * math.pi / 8) + (math.pi / 2): # Correct
-            # Front-right (45°)
-            self.texture = self.walk_ani_45[i]
-            self.texture_path = self.walk_ani_45_path[i]
-        elif 11 * math.pi / 8 <= relative_angle < 13 * math.pi / 8: # Correct
-            # Right (90°)
-            self.texture = self.walk_ani_90[i]
-            self.texture_path = self.walk_ani_90_path[i]
-        elif (5 * math.pi / 8) + (math.pi / 2) <= relative_angle < (7 * math.pi / 8) + (math.pi / 2): # Correct
-            # Back-right (135°)
-            self.texture = self.walk_ani_135[i]
-            self.texture_path = self.walk_ani_135_path[i]
-        elif 7 * math.pi / 8 <= relative_angle < 9 * math.pi / 8: # Correct
-            # Back (180°)
-            self.texture = self.walk_ani_180[i]
-            self.texture_path = self.walk_ani_180_path[i]
-        elif (math.pi / 8) + (math.pi / 2) <= relative_angle < (3 * math.pi / 8) + (math.pi / 2): # Correct
-            # Back-left (225°)
-            self.texture = self.walk_ani_225[i]
-            self.texture_path = self.walk_ani_225_path[i]
-        elif 3 * math.pi / 8 <= relative_angle < 5 * math.pi / 8: # Correct
-            # Left (270°)
-            self.texture = self.walk_ani_270[i]
-            self.texture_path = self.walk_ani_270_path[i]
-        else:
-            # Front-left (315°)
-            self.texture = self.walk_ani_315[i]
-            self.texture_path = self.walk_ani_315_path[i]
-
-        # Updates other animations
-        if self.is_dying:
-            self.texture = self.death_ani[self.current_death_frame]
-            self.texture_path = self.death_ani_path[self.current_death_frame]
-
-    def patrol(self, delta_time, player_x, player_y):
-        """Move randomly to valid tiles unless the player is visible."""
-        if self.is_dying:
-            return
-
-        if self.patrol_wait > 0:
-            self.patrol_wait -= delta_time
-            return
-
-        # Check if the player is visible and within range
-        dx = player_x - self.x
-        dy = player_y - self.y
-
-        distance_squared = dx ** 2 + dy ** 2
-
-        # Increase visibility range (e.g., up to 5 tiles)
-        if distance_squared <= math.pow(self.max_detect_distance, 2) and self.can_see(player_x, player_y):  # Adjusted from <= 9 to <= 25
-            # Player is visible and within range; stop patrolling
-            self.target_x = None
-            self.target_y = None
-            return  # Enemy stands still
-    
-        # Continue patrolling if the player is not visible
-        self.patrol_timer -= delta_time
-    
-        if self.patrol_timer <= 0 or (self.target_x is None or self.target_y is None):
-            # Reset patrol timer
-            self.patrol_timer = random.uniform(1, 3)
-    
-            # Find a random valid tile within line of sight
-            valid_tiles = []
-            for dy in range(-5, 6):  # Adjust range for line of sight distance
-                for dx in range(-5, 6):
-                    target_x = int(self.x + dx)
-                    target_y = int(self.y + dy)
-                    if self.can_see(target_x, target_y) and mapData[target_y][target_x] == ' ':
-                        valid_tiles.append((target_x + 0.5, target_y + 0.5))
-    
-            if valid_tiles:
-                self.target_x, self.target_y = random.choice(valid_tiles)
-    
-        # Move towards target position if set
-        if self.target_x is not None and self.target_y is not None:
-            speed = 1 * delta_time  # Adjust speed as needed
-            dx = self.target_x - self.x
-            dy = self.target_y - self.y
-            # Update rotation for sprite
-            self.rotation = math.atan2(dx, dy)
-
-            distance = math.sqrt(dx ** 2 + dy ** 2)
-            if distance > speed:
-                self.x += (dx / distance) * speed
-                self.y += (dy / distance) * speed
-                self.is_walking = True
-            else:
-                # Reached target position
-                self.x, self.y = self.target_x, self.target_y
-                self.target_x, self.target_y = None, None
-                self.is_walking = False
-                self.patrol_wait = random.uniform(1, 3)
-
-    def can_see(self, target_x, target_y):
-        """Check if this sprite can see a given tile."""
-        ray_x, ray_y = self.x, self.y
-        dir_x = target_x - ray_x
-        dir_y = target_y - ray_y
-        distance = math.sqrt(dir_x ** 2 + dir_y ** 2)
-
-        # Prevent division by zero
-        if distance == 0:
-            return True
-
-        # Normalize direction vector
-        dir_x /= distance
-        dir_y /= distance
-
-        max_distance = self.max_detect_distance  # Maximum visibility range in tiles (adjust as needed)
-        traveled_distance = 0.0
-
-        while traveled_distance < max_distance:
-            # Step along the ray
-            ray_x += dir_x * 0.1
-            ray_y += dir_y * 0.1
-            traveled_distance += 0.1
-
-            # Convert to map grid coordinates
-            map_x, map_y = int(ray_x), int(ray_y)
-
-            # Check for out-of-bounds access
-            if map_x < 0 or map_x >= len(mapData[0]) or map_y < 0 or map_y >= len(mapData):
-                return False
-
-            # Check if we've reached the target tile
-            if int(ray_x) == int(target_x) and int(ray_y) == int(target_y):
-                return True
-
-            # Check for walls blocking the view
-            if mapData[map_y][map_x] in ('█', '▓'):
-                return False
-
-        return False  # Target is out of maximum range or blocked by walls
-
-    def shoot_at_player(self, delta_time, player):
-        """Shoot at the player."""
-        dx = player.player_x - self.x
-        dy = player.player_y - self.y
-        distance = math.sqrt(dx ** 2 + dy ** 2)
-
-        if self.is_dying:
-            return
-
-        # Increase shooting range (e.g., up to 5 tiles)
-        if distance <= self.max_detect_distance:
-            if self.can_see(player.player_x, player.player_y):
-                if self.current_shoot_frame == 0: #When the enemy is not firing
-                    self.texture = self.shoot_ani[0]
-                    self.texture_path = self.shoot_ani_path[0]
-                elif self.current_shoot_frame == 1:
-                    self.texture = self.shoot_ani[1]
-                    self.texture_path = self.shoot_ani_path[1]
-
-                if self.shoot_timer >= self.no_fire_frame_duration and self.current_shoot_frame == 0:
-                    arcade.play_sound(self.gun_shot, 0.7) # type: ignore
-
-                    if random.uniform(0, 100) <= ((distance) / self.max_detect_distance) * 100:
-                        upper_dam = 30 / (distance / self.max_detect_distance)
-                        lower_dam = 10 / (distance / self.max_detect_distance)
-                        player.hurt_player(random.uniform(lower_dam, upper_dam))
-
-                    self.shoot_timer = 0
-                    self.current_shoot_frame = 1
-                elif self.shoot_timer >= self.fire_frame_duration and self.current_shoot_frame == 1:
-                    self.shoot_timer = 0
-                    self.current_shoot_frame = 0
-
-                self.shoot_timer += delta_time
-                return
-        else:
-            self.shoot_timer = 0
-
-    def hurt_sprite(self, sprite, damage, player):
-        """Remove a sprite when it is hit."""
-        sprite.health -= damage
-
-        if sprite.health <= 0 and not sprite.is_dying:
-            # Start death animation
-            sprite.is_dying = True
-            sprite.current_death_frame = 0
-            sprite.death_timer = 0
-            random_death_sound = random.choice(self.death_sound)
-            arcade.play_sound(random_death_sound, volume=1)
-            player.max_health += 5
-            player.health += 5
-        elif sprite.health <= 0 and sprite.is_dying:
-            random_gore_sound = random.choice(self.gore_sounds)
-            arcade.play_sound(random_gore_sound, volume=1)
-        else:
-            random_gore_sound = random.choice(self.gore_sounds)
-            random_scream_sound = random.choice(self.scream_sounds)
-            arcade.play_sound(random_gore_sound, volume=1)
-            arcade.play_sound(random_scream_sound, volume=1)
-
 # Game class inheriting from arcade.Window
 class GameLoop(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable=True, vsync=True) # type: ignore
         
         # Clear out texture Cache
-        delete_all_files_in_directory(os.path.join(DIR, "Cache"))
+        res_load.delete_all_files_in_directory(os.path.join(DIR, "Cache"))
 
         self.screen_width = SCREEN_WIDTH
         self.screen_height = SCREEN_HEIGHT
@@ -521,7 +76,7 @@ class GameLoop(arcade.Window):
         self.crosshair = os.path.join(DIR, "Textures\\UI\\crosshair.png")
 
         # Gun animation loading
-        self.gun_animation_frames = load_animation(os.path.join(DIR, "Textures\\Guns\\Pistol"))
+        self.gun_animation_frames = res_load.load_animation(os.path.join(DIR, "Textures\\Guns\\Pistol"))
         self.current_frame_index = 0  # Track the current frame of the animation
         self.animation_timer = 0      # Timer to control frame rate
         self.animation_speed = 0.07   # Time (in seconds) between frames
@@ -536,12 +91,12 @@ class GameLoop(arcade.Window):
 
         # Footstep sounds
         self.footsteps_folder_path = os.path.join(DIR, "Sounds\\Player\\Footsteps")
-        self.footstep_sounds = load_folder_sounds(self.footsteps_folder_path)
+        self.footstep_sounds = res_load.load_folder_sounds(self.footsteps_folder_path)
         self.last_footstep_time = 0  # To manage cooldown between footsteps
         self.footstep_cooldown = 0.4  # Minimum time between footsteps (in seconds)
 
         # Gun sounds
-        self.gun_sounds = load_folder_sounds(os.path.join(DIR, "Sounds\\Player\\Gun"))
+        self.gun_sounds = res_load.load_folder_sounds(os.path.join(DIR, "Sounds\\Player\\Guns"))
 
         # Gun atributes        
         # Gun position variables
@@ -554,7 +109,7 @@ class GameLoop(arcade.Window):
         self.bob_speed = 5  # Speed of bobbing motion
 
         # Player attributes
-        self.player_x, self.player_y = get_player_spawn(self) # type: ignore
+        self.player_x, self.player_y = scene.get_player_spawn()
         self.player_angle = 0
         self.player_rotate_speed = 2
         self.player_speed = 2
@@ -584,11 +139,11 @@ class GameLoop(arcade.Window):
         self.sprite_count = 0
 
         # Create a list of sprites with their positions in the game world
-        for y in range(len(mapData)):
-            for x in range(len(mapData[0])):
-                if mapData[y][x] == '$':
-                    mapData[y] = mapData[y][:x] + ' ' + mapData[y][x+1:]
-                    self.sprites.append(Sprite(x, y, 0, 0.3, 0.3, self.guard, health=100))
+        for y in range(len(scene.mapData)):
+            for x in range(len(scene.mapData[0])):
+                if scene.mapData[y][x] == '$':
+                    scene.mapData[y] = scene.mapData[y][:x] + ' ' + scene.mapData[y][x+1:]
+                    self.sprites.append(sprite.Sprite(x, y, 0, 0.3, 0.3, self.guard, health=100))
 
         # Player Stats
         self.health = 100
@@ -881,7 +436,7 @@ class GameLoop(arcade.Window):
                     map_y += step_y
                     side = 1  # Hit was on a y-side (horizontal wall)
 
-                if mapData[map_y][map_x] == '█' or mapData[map_y][map_x] == '▓':
+                if scene.mapData[map_y][map_x] == '█' or scene.mapData[map_y][map_x] == '▓':
                     hit = True
 
             # Calculate distance from player to wall using perpendicular distance correction
@@ -919,11 +474,11 @@ class GameLoop(arcade.Window):
 
             texture_path = ''
 
-            if(mapData[map_y][map_x] == '█'):
+            if(scene.mapData[map_y][map_x] == '█'):
                 texture_path = self.wall_texture
-            elif mapData[map_y][map_x] == '▓':
+            elif scene.mapData[map_y][map_x] == '▓':
                 texture_path = self.door_closed_texture
-            elif mapData[map_y][map_x] == '░':
+            elif scene.mapData[map_y][map_x] == '░':
                 texture_path = self.door_open_texture
 
             # Determine which part of texture to sample using wall hit position (wall_x)
@@ -1006,12 +561,12 @@ class GameLoop(arcade.Window):
         # Define the grid size (matches TILE_SIZE)
 
         # Draw horizontal lines
-        for x in range(self.screen_height, self.screen_height - (len(mapData) * TILE_SIZE), -TILE_SIZE):
-            arcade.draw_line(0, x, len(mapData[0]) * TILE_SIZE, x, arcade.color.LIGHT_GRAY)
+        for x in range(self.screen_height, self.screen_height - (len(scene.mapData) * TILE_SIZE), -TILE_SIZE):
+            arcade.draw_line(0, x, len(scene.mapData[0]) * TILE_SIZE, x, arcade.color.LIGHT_GRAY)
 
         # Draw vertical lines
-        for y in range(0, len(mapData[0]) * TILE_SIZE, TILE_SIZE):
-            arcade.draw_line(y, self.screen_height, y, self.screen_height - (len(mapData) * TILE_SIZE), arcade.color.LIGHT_GRAY)
+        for y in range(0, len(scene.mapData[0]) * TILE_SIZE, TILE_SIZE):
+            arcade.draw_line(y, self.screen_height, y, self.screen_height - (len(scene.mapData) * TILE_SIZE), arcade.color.LIGHT_GRAY)
 
     def draw_stats(self):
         """Draw FPS counter and general game stats in the top-right corner."""
@@ -1024,7 +579,7 @@ class GameLoop(arcade.Window):
         )
 
     def draw_map(self):
-        for row_index, row in enumerate(mapData):
+        for row_index, row in enumerate(scene.mapData):
             for col_index, tile in enumerate(row):
                 x = col_index * TILE_SIZE
                 y = self.screen_height - (row_index * TILE_SIZE)  # Invert y-axis to match screen    coordinates
@@ -1230,11 +785,11 @@ class GameLoop(arcade.Window):
             map_y = int(corner_y // TILE_SIZE)
 
             # Ensure we're not out of bounds
-            if map_x < 0 or map_x >= len(mapData[0]) or map_y < 0 or map_y >= len(mapData):
+            if map_x < 0 or map_x >= len(scene.mapData[0]) or map_y < 0 or map_y >= len(scene.mapData):
                 return True  # Treat out-of-bounds as a collision
 
             # Check if any corner is inside a wall ('█')
-            if mapData[map_y][map_x] == '█' or mapData[map_y][map_x] == '▓':
+            if scene.mapData[map_y][map_x] == '█' or scene.mapData[map_y][map_x] == '▓':
                 return True  # Collision detected
 
         return False  # No collision
@@ -1251,15 +806,15 @@ class GameLoop(arcade.Window):
         front_y = int(self.player_y + direction_y)
 
         # Check if the tile in front of the player is interactive (e.g., a door '░')
-        if mapData[front_y][front_x] == '░' or mapData[front_y][front_x] == '▓':  # Example: Door tile
+        if scene.mapData[front_y][front_x] == '░' or scene.mapData[front_y][front_x] == '▓':  # Example: Door tile
             self.interact_door(front_x, front_y)  # Trigger callback to open door
 
     def interact_door(self, x, y):
         """Open a door at position (x, y)."""
-        if(mapData[y][x] == '░'): # Open
-            mapData[y] = mapData[y][:x] + '▓' + mapData[y][x+1:]
+        if(scene.mapData[y][x] == '░'): # Open
+            scene.mapData[y] = scene.mapData[y][:x] + '▓' + scene.mapData[y][x+1:]
         else:
-            mapData[y] = mapData[y][:x] + '░' + mapData[y][x+1:]
+            scene.mapData[y] = scene.mapData[y][:x] + '░' + scene.mapData[y][x+1:]
 
     def shoot(self):
         """Cast a ray and check for wall or sprite collisions."""
@@ -1323,7 +878,7 @@ class GameLoop(arcade.Window):
                 side = 1  # Hit was on a y-side (horizontal wall)
 
             # Check if we've hit a wall ('█' or '▓')
-            if mapData[map_y][map_x] == '█' or mapData[map_y]   [map_x] == '▓':
+            if scene.mapData[map_y][map_x] == '█' or scene.mapData[map_y]   [map_x] == '▓':
                 hit_wall = True
                 break
 
