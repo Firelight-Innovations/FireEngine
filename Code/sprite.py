@@ -17,11 +17,11 @@ DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(
 class Sprite:
     def on_update(self, delta_time):
         #self.patrol()
-        print('update')
+        return
 
     def on_render(self):
         #self.update_texture()
-        print('render')
+        return
 
     def __init__(self, x, y, rotation, hitbox_x, hitbox_y, sprite_sheet_path, health=math.inf):
         self.x = float(x + 0.5)

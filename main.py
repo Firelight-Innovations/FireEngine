@@ -30,6 +30,7 @@ from Code import scene
 from Code import resource_loading as res_load
 from Code import sprite
 from Code import manager
+from Code import player
 
 # Constants
 SCREEN_WIDTH = 800
@@ -45,10 +46,17 @@ NUM_RAYS = 200     # Number of rays casted for rendering
 # Get the directory of the current script
 DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Assets")
 
+# Creates new game manager object, register update and render functions to it so they are ran.
+game_manager = manager.GameManager()
+
 # Game class inheriting from arcade.Window
 class GameLoop(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable=True, vsync=True) # type: ignore
+
+        # Inits player class and registers it with the game manager
+        self.Player = player.player()
+        game_manager.register(self.Player)
 
         # Clear out texture Cache
         res_load.delete_all_files_in_directory(os.path.join(DIR, "Cache"))
@@ -100,19 +108,7 @@ class GameLoop(arcade.Window):
         # Bobbing effect variables
         self.bob_phase = 0  # Tracks the sine wave phase
         self.bob_amplitude = 5  # How much the gun moves up/down
-        self.bob_speed = 5  # Speed of bobbing motion
-
-        # Player attributes
-        self.player_x, self.player_y = scene.get_player_spawn()
-        self.player_angle = 0
-        self.player_rotate_speed = 2
-        self.player_speed = 2
-        
-        # Movement flags
-        self.move_up = False
-        self.move_down = False
-        self.move_left = False
-        self.move_right = False
+        self.bob_speed = 5  # Speed of bobbing motion  
 
         # Camera turning flags (for arrow keys)
         self.turn_left = False
@@ -162,31 +158,28 @@ class GameLoop(arcade.Window):
         game_manager.update(delta_time)
 
         # Turn speed in radians per frame (e.g., 2 degrees per frame)
-        turn_speed = 2 * math.pi / 180 * delta_time * 35 * self.player_rotate_speed
+        turn_speed = 2 * math.pi / 180 * delta_time * 35 * self.Player.player_rotate_speed
 
         # Adjust player angle for camera turning (left/right)
         if self.turn_left:
-            self.player_angle -= turn_speed  # Turn left (counterclockwise)
+            self.Player.player_angle -= turn_speed  # Turn left (counterclockwise)
         if self.turn_right:
-            self.player_angle += turn_speed  # Turn right (clockwise)
+            self.Player.player_angle += turn_speed  # Turn right (clockwise)
 
         # Update direction vector based on new angle
-        self.dir_x = math.cos(self.player_angle)
-        self.dir_y = math.sin(self.player_angle)
+        self.dir_x = math.cos(self.Player.player_angle)
+        self.dir_y = math.sin(self.Player.player_angle)
 
         # Update camera plane based on new angle
         # This keeps the FOV constant while rotating
-        self.plane_x = -(2/3) * math.sin(self.player_angle)  # Adjust -0.66 for FOV scaling
-        self.plane_y = (2/3) * math.cos(self.player_angle)
-
-        # Update player position based on movement flags
-        self.update_player_position(delta_time=delta_time)
+        self.plane_x = -(2/3) * math.sin(self.Player.player_angle)  # Adjust -0.66 for FOV scaling
+        self.plane_y = (2/3) * math.cos(self.Player.player_angle)
 
         # Audio update
         self.play_next_song()
 
         # Check if player is moving
-        is_moving = self.move_up or self.move_down or self. move_left or self.move_right
+        is_moving = self.Player.move_up or self.Player.move_down or self.Player.move_left or self.Player.move_right
 
         # Play footstep sound if moving and cooldown has passed
         current_time = time.time()
@@ -199,8 +192,6 @@ class GameLoop(arcade.Window):
         self.last_time = current_time
 
         # Bobs gun as player moves
-        # Check if player is moving
-        is_moving = self.move_up or self.move_down or self.move_left or self.move_right
         
         if is_moving:
             self.bob_phase += self.bob_speed * delta_time
@@ -250,10 +241,10 @@ class GameLoop(arcade.Window):
                     self.sprites.remove(sprite)
                     game_manager.unregister(sprite)
 
-            sprite.patrol(delta_time, self.player_x, self.player_y)
+            sprite.patrol(delta_time, self.Player.player_x, self.Player.player_y)
             # Check if the enemy should shoot at the player
-            sprite.update_texture(player_x=self.player_x, player_y=self.player_y)
-            sprite.shoot_at_player(delta_time, self)
+            sprite.update_texture(player_x=self.Player.player_x, player_y=self.Player.player_y)
+            sprite.shoot_at_player(delta_time, self.Player)
 
         # Accumulate frame times and count frames
         self.time_accumulator += frame_time
@@ -358,12 +349,16 @@ class GameLoop(arcade.Window):
         """Handle key press events."""
         if key == arcade.key.W:
             self.move_up = True
+            game_manager.move_up(True)
         elif key == arcade.key.S:
             self.move_down = True
+            game_manager.move_down(True)
         elif key == arcade.key.A:
             self.move_left = True
+            game_manager.move_left(True)
         elif key == arcade.key.D:
             self.move_right = True
+            game_manager.move_right(True)
         elif key == arcade.key.LEFT:  # Turn camera left
             self.turn_left = True
         elif key == arcade.key.RIGHT:  # Turn camera right
@@ -377,12 +372,16 @@ class GameLoop(arcade.Window):
         """Handle key release events."""
         if key == arcade.key.W:
             self.move_up = False
+            game_manager.move_up(False)
         elif key == arcade.key.S:
             self.move_down = False
+            game_manager.move_down(False)
         elif key == arcade.key.A:
             self.move_left = False
+            game_manager.move_left(False)
         elif key == arcade.key.D:
             self.move_right = False
+            game_manager.move_right(False)
         elif key == arcade.key.LEFT:  # Stop turning left
             self.turn_left = False
         elif key == arcade.key.RIGHT:  # Stop turning right
@@ -392,7 +391,7 @@ class GameLoop(arcade.Window):
         """Cast rays from the player's position and render walls with correct depth."""
 
         # Starting angle for the first ray (leftmost ray in player's FOV)
-        ray_angle = self.player_angle - FOV / 2
+        ray_angle = self.Player.player_angle - FOV / 2
 
         self.z_buffer.clear()
 
@@ -403,8 +402,8 @@ class GameLoop(arcade.Window):
             ray_dir_y = math.sin(ray_angle)
 
             # Player's current position in grid units
-            map_x = int(self.player_x)
-            map_y = int(self.player_y)
+            map_x = int(self.Player.player_x)
+            map_y = int(self.Player.player_y)
 
             # Distance increments for each step along x and y axes
             delta_dist_x = abs(1 / ray_dir_x) if ray_dir_x != 0 else float('inf')
@@ -413,17 +412,17 @@ class GameLoop(arcade.Window):
             # Calculate step direction and initial side distances
             if ray_dir_x < 0:
                 step_x = -1
-                side_dist_x = (self.player_x - map_x) * delta_dist_x
+                side_dist_x = (self.Player.player_x - map_x) * delta_dist_x
             else:
                 step_x = 1
-                side_dist_x = (map_x + 1.0 - self.player_x) * delta_dist_x
+                side_dist_x = (map_x + 1.0 - self.Player.player_x) * delta_dist_x
 
             if ray_dir_y < 0:
                 step_y = -1
-                side_dist_y = (self.player_y - map_y) * delta_dist_y
+                side_dist_y = (self.Player.player_y - map_y) * delta_dist_y
             else:
                 step_y = 1
-                side_dist_y = (map_y + 1.0 - self.player_y) * delta_dist_y
+                side_dist_y = (map_y + 1.0 - self.Player.player_y) * delta_dist_y
 
             # Perform DDA to find where the ray hits a wall
             hit = False
@@ -450,11 +449,11 @@ class GameLoop(arcade.Window):
                 continue
 
             if side == 0:
-                perp_wall_dist = max((map_x - self.player_x + (1 - step_x) / 2) / (ray_dir_x + epsilon), epsilon)
+                perp_wall_dist = max((map_x - self.Player.player_x + (1 - step_x) / 2) / (ray_dir_x + epsilon), epsilon)
             else:
-                perp_wall_dist = max((map_y - self.player_y + (1 - step_y) / 2) / (ray_dir_y + epsilon), epsilon)
+                perp_wall_dist = max((map_y - self.Player.player_y + (1 - step_y) / 2) / (ray_dir_y + epsilon), epsilon)
 
-            perp_wall_dist *= math.cos(ray_angle - self.player_angle)
+            perp_wall_dist *= math.cos(ray_angle - self.Player.player_angle)
 
             # Store this distance in ZBuffer for this column of pixels
             self.z_buffer.append(perp_wall_dist)
@@ -467,9 +466,9 @@ class GameLoop(arcade.Window):
             ray_screen_position = int(ray * self.screen_width / NUM_RAYS)
 
             if side == 0:
-                wall_x = self.player_y + (map_x - self.player_x + (1 - step_x) / 2) / ray_dir_x * ray_dir_y
+                wall_x = self.Player.player_y + (map_x - self.Player.player_x + (1 - step_x) / 2) / ray_dir_x * ray_dir_y
             else:
-                wall_x = self.player_x + (map_y - self.player_y + (1 - step_y) / 2) / ray_dir_y * ray_dir_x 
+                wall_x = self.Player.player_x + (map_y - self.Player.player_y + (1 - step_y) / 2) / ray_dir_y * ray_dir_x 
 
             wall_x %= 1
 
@@ -512,51 +511,6 @@ class GameLoop(arcade.Window):
             )
 
             ray_angle += FOV / NUM_RAYS
-
-    def update_player_position(self, delta_time):
-        """Update player position based on movement flags and camera rotation."""
-        move_speed = min(self.player_speed / TILE_SIZE, TILE_SIZE / 10) * delta_time * 35 # Ensure small steps relative to tile size
-
-        # Calculate direction vector based on player's current angle
-        direction_x = math.cos(self.player_angle)
-        direction_y = math.sin(self.player_angle)
-
-        new_x = self.player_x
-        new_y = self.player_y
-
-        # Move forward (W key) or backward (S key) based on camera direction
-        if self.move_up:  # Move forward
-            new_x += direction_x * move_speed
-            new_y += direction_y * move_speed
-            if not self.check_collision(new_x * TILE_SIZE, new_y * TILE_SIZE):  # Only update if no collision detected
-                self.player_x = new_x
-                self.player_y = new_y
-
-        if self.move_down:  # Move backward
-            new_x -= direction_x * move_speed
-            new_y -= direction_y * move_speed
-            if not self.check_collision(new_x * TILE_SIZE, new_y * TILE_SIZE):  # Only update if no collision detected
-                self.player_x = new_x
-                self.player_y = new_y
-
-        # Strafe left (A key) or right (D key)
-        if self.move_left:  # Strafe left (perpendicular to view direction)
-            strafe_x = math.cos(self.player_angle - math.pi / 2)
-            strafe_y = math.sin(self.player_angle - math.pi / 2)
-            new_x += strafe_x * move_speed
-            new_y += strafe_y * move_speed
-            if not self.check_collision(new_x * TILE_SIZE, new_y * TILE_SIZE):  # Only update if no collision detected
-                self.player_x = new_x
-                self.player_y = new_y
-
-        if self.move_right:  # Strafe right (perpendicular to view direction)
-            strafe_x = math.cos(self.player_angle + math.pi / 2)
-            strafe_y = math.sin(self.player_angle + math.pi / 2)
-            new_x += strafe_x * move_speed
-            new_y += strafe_y * move_speed
-            if not self.check_collision(new_x * TILE_SIZE, new_y * TILE_SIZE):  # Only update if no collision detected
-                self.player_x = new_x
-                self.player_y = new_y
     
     def draw_grid(self):
         # Define the grid size (matches TILE_SIZE)
@@ -573,7 +527,7 @@ class GameLoop(arcade.Window):
         """Draw FPS counter and general game stats in the top-right corner."""
         # Display FPS in top-right corner
         arcade.draw_text(
-            f"FPS: {self.fps:.2f} \nPlayer X: {self.player_x:.2f} \nPlayer Y: {self.player_y:.2f} \nPlayer Rot: {(self.player_angle * (180 / math.pi)):.2f}º \nSprites on Screen: {(self.sprite_count)}", 
+            f"FPS: {self.fps:.2f} \nPlayer X: {self.Player.player_x:.2f} \nPlayer Y: {self.Player.player_y:.2f} \nPlayer Rot: {(self.Player.player_angle * (180 / math.pi)):.2f}º \nSprites on Screen: {(self.sprite_count)}", 
             10, 
             SCREEN_HEIGHT - 20, 
             arcade.color.BLACK
@@ -603,7 +557,7 @@ class GameLoop(arcade.Window):
         sprite_distances = []
         for sprite in self.sprites:
             # Calculate distance from player to each sprite (squared distance to avoid sqrt)
-            dist = (sprite.x - self.player_x) ** 2 + (sprite.y - self.player_y) ** 2
+            dist = (sprite.x - self.Player.player_x) ** 2 + (sprite.y - self.Player.player_y) ** 2
             sprite_distances.append((sprite, dist))
 
         # Sort sprites by distance (farthest to nearest)
@@ -613,8 +567,8 @@ class GameLoop(arcade.Window):
         for sprite, _ in sprite_distances:
             try:
                 # Translate sprite position relative to player
-                sprite_x = sprite.x - self.player_x
-                sprite_y = sprite.y - self.player_y
+                sprite_x = sprite.x - self.Player.player_x
+                sprite_y = sprite.y - self.Player.player_y
 
                 # Apply camera transformation (inverse of camera matrix)
                 inv_det = 1.0 / (self.plane_x * self.dir_y - self.dir_x * self.plane_y)
@@ -767,44 +721,16 @@ class GameLoop(arcade.Window):
             texture=crosshair_tex
         )
 
-    def check_collision(self, x, y):
-        """Check if the player's bounding box collides with any walls."""
-        # Define a small collision buffer around the player
-        buffer = 0.15  # Adjust this value as needed
-
-        # Check four corners of the player's bounding box
-        corners = [
-            (x - buffer, y - buffer),  # Bottom-left
-            (x + buffer, y - buffer),  # Bottom-right
-            (x - buffer, y + buffer),  # Top-left
-            (x + buffer, y + buffer)   # Top-right
-        ]
-
-        for corner_x, corner_y in corners:
-            # Convert corner coordinates to map grid indices
-            map_x = int(corner_x // TILE_SIZE)
-            map_y = int(corner_y // TILE_SIZE)
-
-            # Ensure we're not out of bounds
-            if map_x < 0 or map_x >= len(scene.mapData[0]) or map_y < 0 or map_y >= len(scene.mapData):
-                return True  # Treat out-of-bounds as a collision
-
-            # Check if any corner is inside a wall ('█')
-            if scene.mapData[map_y][map_x] == '█' or scene.mapData[map_y][map_x] == '▓':
-                return True  # Collision detected
-
-        return False  # No collision
-
     def interact(self):
         """Check if the player is facing an interactive object and trigger a callback."""
 
         # Calculate the direction vector based on player's current angle
-        direction_x = math.cos(self.player_angle)
-        direction_y = math.sin(self.player_angle)
+        direction_x = math.cos(self.Player.player_angle)
+        direction_y = math.sin(self.Player.player_angle)
 
         # Calculate the tile in front of the player
-        front_x = int(self.player_x + direction_x)
-        front_y = int(self.player_y + direction_y)
+        front_x = int(self.Player.player_x + direction_x)
+        front_y = int(self.Player.player_y + direction_y)
 
         # Check if the tile in front of the player is interactive (e.g., a door '░')
         if scene.mapData[front_y][front_x] == '░' or scene.mapData[front_y][front_x] == '▓':  # Example: Door tile
@@ -831,12 +757,12 @@ class GameLoop(arcade.Window):
         self.animation_timer = 0      # Reset animation timer
 
         # Player's starting position
-        ray_x = self.player_x
-        ray_y = self.player_y
+        ray_x = self.Player.player_x
+        ray_y = self.Player.player_y
 
         # Ray direction (player's facing direction)
-        ray_dir_x = math.cos(self.player_angle)
-        ray_dir_y = math.sin(self.player_angle)
+        ray_dir_x = math.cos(self.Player.player_angle)
+        ray_dir_y = math.sin(self.Player.player_angle)
 
         # Player's current position in grid units
         map_x = int(ray_x)
@@ -945,10 +871,6 @@ class GameLoop(arcade.Window):
 # Main function to start the game
 def main():
     """Main function to set up and run the game."""
-    # Creates new game manager object, register update and render functions to it so they are ran.
-    global game_manager
-    game_manager = manager.GameManager()
-
     game = GameLoop()
     arcade.run()
 

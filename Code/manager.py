@@ -19,6 +19,10 @@ class GameManager:
             if hasattr(obj, func_name) and callable(func := getattr(obj, func_name)):
                 func(*args, **kwargs)
 
+    ###############
+    #   Updates   #
+    ###############
+
     def update(self, delta_time):
         """Call 'on_update' on all registered objects."""
         self.call_function("on_update", delta_time)
@@ -26,3 +30,23 @@ class GameManager:
     def render(self):
         """Call 'on_render' on all registered objects."""
         self.call_function("on_render")
+
+    ################
+    #   MOVEMENT   #
+    ################
+
+    def move_up(self, pressed):
+        """Calls 'on_move_up' on all registered objects.'"""
+        self.call_function("on_move_up", pressed)
+
+    def move_down(self, pressed):
+        """Calls 'on_move_down' on all registered objects.'"""
+        self.call_function("on_move_down", pressed)
+
+    def move_right(self, pressed):
+        """Calls 'on_move_right' on all registered objects.'"""
+        self.call_function("on_move_right", pressed)
+
+    def move_left(self, pressed):
+        """Calls 'on_move_left' on all registered objects.'"""
+        self.call_function("on_move_left", pressed)
