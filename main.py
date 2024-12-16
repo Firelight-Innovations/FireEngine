@@ -29,13 +29,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Code")
 from Code import scene
 from Code import resource_loading as res_load
 from Code import sprite
-
-# Wall: '█'
-# Door: '░'
-# Open door: '░'
-# Empty Space: ' '
-# Player Spawn:'*'
-# Enemy Spawn: '$'
+from Code import manager
 
 # Constants
 SCREEN_WIDTH = 800
@@ -55,7 +49,7 @@ DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Assets")
 class GameLoop(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable=True, vsync=True) # type: ignore
-        
+
         # Clear out texture Cache
         res_load.delete_all_files_in_directory(os.path.join(DIR, "Cache"))
 
@@ -143,7 +137,9 @@ class GameLoop(arcade.Window):
             for x in range(len(scene.mapData[0])):
                 if scene.mapData[y][x] == '$':
                     scene.mapData[y] = scene.mapData[y][:x] + ' ' + scene.mapData[y][x+1:]
-                    self.sprites.append(sprite.Sprite(x, y, 0, 0.3, 0.3, self.guard, health=100))
+                    new_sprite = sprite.Sprite(x, y, 0, 0.3, 0.3, self.guard, health=100)
+                    self.sprites.append(new_sprite)
+                    game_manager.register(new_sprite)
 
         # Player Stats
         self.health = 100
@@ -163,6 +159,8 @@ class GameLoop(arcade.Window):
 
     def on_update(self, delta_time):
         """Update game state."""
+        game_manager.update(delta_time)
+
         # Turn speed in radians per frame (e.g., 2 degrees per frame)
         turn_speed = 2 * math.pi / 180 * delta_time * 35 * self.player_rotate_speed
 
@@ -250,6 +248,7 @@ class GameLoop(arcade.Window):
                 # Remove sprite once animation is complete
                 if sprite.death_timer  >= (len(sprite.death_animation) * sprite.death_frame_duration) + 5:
                     self.sprites.remove(sprite)
+                    game_manager.unregister(sprite)
 
             sprite.patrol(delta_time, self.player_x, self.player_y)
             # Check if the enemy should shoot at the player
@@ -279,6 +278,8 @@ class GameLoop(arcade.Window):
 
     def on_draw(self):
         """Render the screen."""
+        game_manager.render()
+
         arcade.start_render()
 
         # Draws floor
@@ -944,6 +945,10 @@ class GameLoop(arcade.Window):
 # Main function to start the game
 def main():
     """Main function to set up and run the game."""
+    # Creates new game manager object, register update and render functions to it so they are ran.
+    global game_manager
+    game_manager = manager.GameManager()
+
     game = GameLoop()
     arcade.run()
 

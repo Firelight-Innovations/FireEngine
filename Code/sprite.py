@@ -9,9 +9,20 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Code")
 from Code import resource_loading as res_load
 from Code import scene
 
+import main
+
+# Importing assets 
 DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "Assets")
 
 class Sprite:
+    def on_update(self, delta_time):
+        #self.patrol()
+        print('update')
+
+    def on_render(self):
+        #self.update_texture()
+        print('render')
+
     def __init__(self, x, y, rotation, hitbox_x, hitbox_y, sprite_sheet_path, health=math.inf):
         self.x = float(x + 0.5)
         self.y = float(y + 0.5)
