@@ -21,13 +21,13 @@ from FireEngine.core import scene
 from FireEngine.core import manager
 from FireEngine.core import player
 from FireEngine.core import render
-from FireEngine.core import resource_loading as res_load
+from FireEngine.core.resources import resource_loading as res_load
 
-from FireEngine import sprite
-from FireEngine import debug
-from FireEngine import game_ui
-from FireEngine import audio
-from FireEngine import interact
+from FireEngine.objects import sprite
+from FireEngine.ui import debug
+from FireEngine.ui import game_ui
+from FireEngine.audio import audio
+from FireEngine.player import interact
 
 # Constants
 SCREEN_TITLE = "Minenstien"
