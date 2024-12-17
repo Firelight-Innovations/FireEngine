@@ -3,11 +3,13 @@ import random
 import os
 
 from FireEngine.core.decorators import singleton
+from FireEngine.core.decorators import register
 
 # Importing assets 
 DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "Assets")
 
 @singleton
+@register
 class music():
     def __init__(self):
         # Audio Loading

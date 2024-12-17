@@ -7,6 +7,7 @@ import math
 # Importing other scripts
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "FireEngine"))
 from FireEngine.core.decorators import singleton
+from FireEngine.core.decorators import register
 
 # Importing assets 
 DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "Assets")
@@ -15,6 +16,7 @@ DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(
 sprites = []
 sprite_count = 0
 
+# Doesn't have register tag because it will run after the cache clear
 @singleton
 class sprite_init:
     def __init__(self):
@@ -32,13 +34,14 @@ class sprite_init:
             for x in range(len(scene.mapData[0])):
                 if scene.mapData[y][x] == '$':
                     scene.mapData[y] = scene.mapData[y][:x] + ' ' + scene.mapData[y][x+1:]
-                    new_sprite = sprite(x, y, 0, 0.3, 0.3, guard, health=100)
-                    sprites.append(new_sprite)
-                    main.Game.register(new_sprite)
+                    sprite(x, y, 0, 0.3, 0.3, guard, health=100) # Instantiates a new sprite object, inherits from the sprite class
 
+@register
 class sprite:
     def __init__(self, x, y, rotation, hitbox_x, hitbox_y, sprite_sheet_path, health=math.inf):
         from FireEngine.core import resource_loading as res_load
+
+        sprites.append(self)
 
         self.x = float(x + 0.5)
         self.y = float(y + 0.5)

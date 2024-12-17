@@ -1,5 +1,7 @@
+from FireEngine.core.decorators import singleton
 from FireEngine.core.decorators import register
 
+@singleton
 @register
 class player():
     def __init__(self):

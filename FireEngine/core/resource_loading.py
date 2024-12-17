@@ -1,6 +1,7 @@
 import arcade
 import os
 from FireEngine.core.decorators import singleton
+from FireEngine.core.decorators import register
 
 # Resource loading
 def load_animation(folder_path, return_paths=False):
@@ -37,6 +38,7 @@ def delete_all_files_in_directory(directory_path):
     except Exception as e:
         return
 
+# Doesn't have register tag because it will run before the sprite texture loading otherwise
 @singleton
 class resource_loading:
     def __init__(self):

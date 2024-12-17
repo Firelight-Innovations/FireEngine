@@ -3,8 +3,10 @@ import math
 import time
 
 from FireEngine.core.decorators import singleton
+from FireEngine.core.decorators import register
 
 @singleton
+@register
 class debug():
     def __init__(self):
         self.last_time = time.time()  # Store the time of the last frame
@@ -78,14 +80,14 @@ class debug():
             self.time_accumulator = 0.0  # Reset accumulator
 
     def on_render(self):
+        import main 
+
         self.priority = 4
 
         # Draw the map and player 
-        #self.draw_map()
-        #self.draw_grid()
-        #arcade.draw_rectangle_filled((Player.player_x * TILE_SIZE), Render.screen_height - (Player.player_y * TILE_SIZE), TILE_SIZE / 2, TILE_SIZE / 2, arcade.color.RED)
+        self.draw_map()
+        self.draw_grid()
+        arcade.draw_rectangle_filled((main.Player.player_x * main.TILE_SIZE), main.Render.screen_height - (main.Player.player_y * main.TILE_SIZE), main.TILE_SIZE / 2, main.TILE_SIZE / 2, arcade.color.RED)
 
         # Draw FPS counter and general stats
         self.draw_stats()
-
-    

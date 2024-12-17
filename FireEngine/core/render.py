@@ -4,6 +4,7 @@ import arcade
 import sys
 import math
 from FireEngine.core.decorators import singleton
+from FireEngine.core.decorators import register
 
 # Importing other scripts
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "FireEngine"))
@@ -17,6 +18,7 @@ NUM_RAYS = 200     # Number of rays casted for rendering
 MAX_DEPTH = 30
 
 @singleton
+@register
 class render():
     def __init__(self, player_instance):
         import main
