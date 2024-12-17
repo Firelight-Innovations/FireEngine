@@ -6,23 +6,18 @@ import math
 
 # Importing other scripts
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Code"))
-from Code import resource_loading as res_load
+from Code import player, resource_loading as res_load
 from Code import scene
-
 import main
 
 # Importing assets 
 DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "Assets")
 
+# List of sprites in the game world
+sprites = []
+sprite_count = 0
+
 class Sprite:
-    def on_update(self, delta_time):
-        #self.patrol()
-        return
-
-    def on_render(self):
-        #self.update_texture()
-        return
-
     def __init__(self, x, y, rotation, hitbox_x, hitbox_y, sprite_sheet_path, health=math.inf):
         self.x = float(x + 0.5)
         self.y = float(y + 0.5)
@@ -406,3 +401,41 @@ class Sprite:
             random_scream_sound = random.choice(self.scream_sounds)
             arcade.play_sound(random_gore_sound, volume=1)
             arcade.play_sound(random_scream_sound, volume=1)
+
+    ########################
+    #   Update functions   #
+    ########################
+
+    def on_update(self, delta_time):
+         # Update death animation timer
+        self.walk_timer += delta_time
+        
+        if self.walk_timer >= self.walk_frame_duration:
+            if self.current_walk_frame + 2 >= len(self.walk_ani_0):
+                self.current_walk_frame = 1
+                self.walk_timer = 0
+            else:
+                self.current_walk_frame += 1
+                self.walk_timer = 0
+
+        if self.is_dying:
+            # Update death animation timer
+            self.death_timer += delta_time
+            if (self.death_timer + self.death_frame_duration >= self.current_death_frame * self.death_frame_duration) and (self.current_death_frame + 1 < len(self.death_animation)):
+                self.current_death_frame += 1
+
+            # Remove sprite once animation is complete
+            if self.death_timer  >= (len(self.death_animation) * self.death_frame_duration) + 5:
+                if self in sprites:
+                    sprites.remove(self)
+                    main.game_manager.unregister(self)
+
+        self.patrol(delta_time, main.Player.player_x, main.Player.player_y)
+
+        # Check if the enemy should shoot at the player
+        self.update_texture(player_x=main.Player.player_x, player_y=main.Player.player_y)
+        self.shoot_at_player(delta_time, main.Player)
+
+    def on_render(self, priority=100):
+        #self.update_texture()
+        return
