@@ -19,7 +19,7 @@ import os
 import sys
 
 # Importing other scripts
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "FireEngine"))
+# sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "FireEngine"))
 
 from FireEngine.core import scene
 from FireEngine.core import manager
@@ -61,7 +61,7 @@ class GameLoop(arcade.Window):
         Game.start()
         Game.unregister(Resource)
 
-        Game.register(Player)
+        # Game.register(Player)
         Game.register(Render)
         Game.register(Debug)
         Game.register(GameUI)
