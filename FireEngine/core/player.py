@@ -4,10 +4,10 @@ import time
 import arcade
 import sys
 import math
-from singleton import singleton
+from FireEngine.core.decorators import singleton
 
 # Importing other scripts
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Code"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "FireEngine"))
 
 # Importing assets 
 DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "Assets")
@@ -15,9 +15,9 @@ DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(
 @singleton
 class player():
     def __init__(self):
-        from Code import scene
-        from Code import render
-        from Code import resource_loading as res_load
+        from FireEngine.core import scene
+        from FireEngine.core import render
+        from FireEngine.core import resource_loading as res_load
 
         #########################
         #   PLAYER ATTRIBUTES   #
@@ -150,7 +150,7 @@ class player():
     def check_collision(self, x: float, y: float):
         """Check if the player's bounding box collides with any walls."""
         import main
-        from Code import scene
+        from FireEngine.core import scene
 
         # Define a small collision buffer around the player
         buffer = 0.15  # Adjust this value as needed
@@ -191,7 +191,7 @@ class player():
             arcade.play_sound(random_sound, volume=0.5)  # Adjust volume as needed
 
     def gun_logic(self, delta_time):
-        from Code import render
+        from FireEngine.core import render
 
         # Bobs gun as player moves
         if self.is_moving:
@@ -222,9 +222,9 @@ class player():
 
     def shoot(self):
         """Cast a ray and check for wall or sprite collisions."""
-        from Code import sprite
-        from Code import scene
-        from Code import render
+        from FireEngine import sprite
+        from FireEngine.core import scene
+        from FireEngine.core import render
         
         # Play a gun sound when shooting
         if self.current_frame_index != 0:
@@ -359,8 +359,15 @@ class player():
         if(self.health < self.max_health):
             self.health += 6.5 * delta_time
 
-    def on_render(self, priority=1000):
-        from Code import render
+                # Update screen effects
+        
+        if(self.health_vfx_indicator > 0):
+            self.health_vfx_indicator -= delta_time
+
+    def on_render(self):
+        from FireEngine.core import render
+
+        self.priority = 1
 
         # Draw gun texture (either static or animated)
         if self.is_shooting:

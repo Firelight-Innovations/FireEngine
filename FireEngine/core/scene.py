@@ -1,6 +1,3 @@
-# Importing other scripts
-from Code import scene
-
 # Wall: '█'
 # Door: '░'
 # Open door: '░'
@@ -37,7 +34,7 @@ def get_player_spawn_x():
     x = 0
     y = 0
 
-    for row_index, row in enumerate(scene.mapData):
+    for row_index, row in enumerate(mapData):
         for col_index, tile in enumerate(row):
             x = col_index
             y = row_index# Invert y-axis to match screencoordinates
@@ -48,7 +45,7 @@ def get_player_spawn_y():
     x = 0
     y = 0
 
-    for row_index, row in enumerate(scene.mapData):
+    for row_index, row in enumerate(mapData):
         for col_index, tile in enumerate(row):
             x = col_index
             y = row_index# Invert y-axis to match screencoordinates

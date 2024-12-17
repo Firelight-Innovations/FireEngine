@@ -5,10 +5,8 @@ import sys
 import math
 
 # Importing other scripts
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Code"))
-from Code import player, resource_loading as res_load
-from Code import scene
-import main
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "FireEngine"))
+from FireEngine.core.decorators import singleton
 
 # Importing assets 
 DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "Assets")
@@ -17,8 +15,31 @@ DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(
 sprites = []
 sprite_count = 0
 
-class Sprite:
+@singleton
+class sprite_init:
+    def __init__(self):
+        pass
+
+    def on_start(self):
+        from FireEngine.core import scene
+        import main
+
+        # Sprite Texture Loading
+        guard = os.path.join(DIR, "Textures\\Sprites\\Guard\\guard_sheet.png")
+
+        # Create a list of sprites with their positions in the game world
+        for y in range(len(scene.mapData)):
+            for x in range(len(scene.mapData[0])):
+                if scene.mapData[y][x] == '$':
+                    scene.mapData[y] = scene.mapData[y][:x] + ' ' + scene.mapData[y][x+1:]
+                    new_sprite = sprite(x, y, 0, 0.3, 0.3, guard, health=100)
+                    sprites.append(new_sprite)
+                    main.Game.register(new_sprite)
+
+class sprite:
     def __init__(self, x, y, rotation, hitbox_x, hitbox_y, sprite_sheet_path, health=math.inf):
+        from FireEngine.core import resource_loading as res_load
+
         self.x = float(x + 0.5)
         self.y = float(y + 0.5)
         self.rotation = rotation
@@ -242,6 +263,8 @@ class Sprite:
 
     def patrol(self, delta_time, player_x, player_y):
         """Move randomly to valid tiles unless the player is visible."""
+        from FireEngine.core import scene
+
         if self.is_dying:
             return
 
@@ -303,6 +326,8 @@ class Sprite:
 
     def can_see(self, target_x, target_y):
         """Check if this sprite can see a given tile."""
+        from FireEngine.core import scene
+
         ray_x, ray_y = self.x, self.y
         dir_x = target_x - ray_x
         dir_y = target_y - ray_y
@@ -407,7 +432,9 @@ class Sprite:
     ########################
 
     def on_update(self, delta_time):
-         # Update death animation timer
+        import main
+
+        # Update death animation timer
         self.walk_timer += delta_time
         
         if self.walk_timer >= self.walk_frame_duration:
@@ -428,14 +455,10 @@ class Sprite:
             if self.death_timer  >= (len(self.death_animation) * self.death_frame_duration) + 5:
                 if self in sprites:
                     sprites.remove(self)
-                    main.game_manager.unregister(self)
+                    main.Game.unregister(self)
 
         self.patrol(delta_time, main.Player.player_x, main.Player.player_y)
 
         # Check if the enemy should shoot at the player
         self.update_texture(player_x=main.Player.player_x, player_y=main.Player.player_y)
         self.shoot_at_player(delta_time, main.Player)
-
-    def on_render(self, priority=100):
-        #self.update_texture()
-        return

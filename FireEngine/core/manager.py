@@ -1,9 +1,9 @@
 registered_objects = []
 
-from singleton import singleton
+from FireEngine.core.decorators import singleton
 
 @singleton
-class GameManager:
+class game_manager:
     def __init__(self):
         return
 
@@ -27,16 +27,34 @@ class GameManager:
     #   Updates   #
     ###############
 
+    def start(self):
+        """Call 'on_start' on all registered objects."""
+        self.call_function("on_start")
+
     def update(self, delta_time: float):
         """Call 'on_update' on all registered objects."""
         self.call_function("on_update", delta_time)
 
-        # import main
-        # print(f'{main.Player.player_x}')
-
     def render(self):
-        """Call 'on_render' on all registered objects. Priority determines when an object is rendered on the screen, lower priorites are rendered first."""
-        self.call_function("on_render")
+        """
+        Call 'on_render' on all registered objects.
+        Priority determines when an object is rendered on the screen,
+        lower priorities are rendered first.
+        """
+        # Filter objects that have an 'on_render' method
+        renderable_objects = [
+            obj for obj in registered_objects if hasattr(obj, "on_render")
+        ]
+
+        # Sort objects by their priority (default to 100 if no priority is set)
+        sorted_objects = sorted(
+            renderable_objects,
+            key=lambda obj: getattr(obj, "priority", 100)  # Default priority is 100
+        )
+
+        # Call 'on_render' for each sorted object
+        for obj in sorted_objects:
+            obj.on_render()
 
     ################
     #   MOVEMENT   #
@@ -73,7 +91,11 @@ class GameManager:
     ##########################
     #   WORLD INTERACTIONS   #
     ##########################
-    
-    def on_shoot(self):
+
+    def shoot(self):
         """Calls 'on_shoot' on all registered objects."""
         self.call_function("on_shoot")
+
+    def interact(self):
+        """Calls 'on_interact' on all registered objects."""
+        self.call_function("on_interact")
