@@ -31,7 +31,7 @@ class debug():
     def draw_stats(self):
         """Draw FPS counter and general game stats in the top-right corner."""
         import main
-        from FireEngine import sprite
+        from FireEngine.objects import sprite
         from FireEngine.core import render
         
         # Display FPS in top-right corner

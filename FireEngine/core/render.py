@@ -39,7 +39,7 @@ class render():
         self.ceiling_texture = os.path.join(main.DIR, "Textures\\Surfaces\\wolf_cobble_floor.png")
 
     def draw_sprites(self):
-        from FireEngine import sprite
+        from FireEngine.objects import sprite
         import main
             
         sprite.sprite_count = 0

@@ -7,7 +7,7 @@ class player():
     def __init__(self):
         from FireEngine.core import scene
         from FireEngine.core import render
-        from FireEngine.core import resource_loading as res_load
+        from FireEngine.core.resources import resource_loading as res_load
         import main
         import os
 
@@ -222,7 +222,7 @@ class player():
 
     def shoot(self):
         """Cast a ray and check for wall or sprite collisions."""
-        from FireEngine import sprite
+        from FireEngine.objects import sprite
         from FireEngine.core import scene
         from FireEngine.core import render
         import math

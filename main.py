@@ -28,6 +28,7 @@ from FireEngine.ui import debug
 from FireEngine.ui import game_ui
 from FireEngine.audio import audio
 from FireEngine.player import interact
+from FireEngine.firemods import mods
 
 # Constants
 SCREEN_TITLE = "Minenstien"

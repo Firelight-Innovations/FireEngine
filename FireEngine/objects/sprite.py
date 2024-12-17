@@ -39,7 +39,7 @@ class sprite_init:
 @register
 class sprite:
     def __init__(self, x, y, rotation, hitbox_x, hitbox_y, sprite_sheet_path, health=math.inf):
-        from FireEngine.core import resource_loading as res_load
+        from FireEngine.core.resources import resource_loading as res_load
 
         sprites.append(self)
 
