@@ -32,6 +32,7 @@ from Code import sprite
 from Code import manager
 from Code import player
 from Code import render
+#from code import singleton
 
 # Constants
 SCREEN_TITLE = "Minenstien"
@@ -47,6 +48,7 @@ Player = player.player()
 Render = render.render(Player)
 
 # Game class inheriting from arcade.Window
+#@singleton
 class GameLoop(arcade.Window):
     def __init__(self):
         super().__init__(render.SCREEN_WIDTH, render.SCREEN_HEIGHT, SCREEN_TITLE, resizable=True, vsync=True) # type: ignore
@@ -136,9 +138,9 @@ class GameLoop(arcade.Window):
         )
 
         # Draw the map and player 
-        #self.draw_map()
-        #self.draw_grid()
-        #arcade.draw_rectangle_filled((Player.player_x * TILE_SIZE), self.screen_height - (Player.player_y * TILE_SIZE), TILE_SIZE / 2, TILE_SIZE / 2, arcade.color.RED)
+        self.draw_map()
+        self.draw_grid()
+        arcade.draw_rectangle_filled((Player.player_x * TILE_SIZE), Render.screen_height - (Player.player_y * TILE_SIZE), TILE_SIZE / 2, TILE_SIZE / 2, arcade.color.RED)
 
         # Draw FPS counter and general stats
         self.draw_stats()
@@ -207,12 +209,12 @@ class GameLoop(arcade.Window):
         # Define the grid size (matches TILE_SIZE)
 
         # Draw horizontal lines
-        for x in range(self.screen_height, self.screen_height - (len(scene.mapData) * TILE_SIZE), -TILE_SIZE):
+        for x in range(Render.screen_height, Render.screen_height - (len(scene.mapData) * TILE_SIZE), -TILE_SIZE):
             arcade.draw_line(0, x, len(scene.mapData[0]) * TILE_SIZE, x, arcade.color.LIGHT_GRAY)
 
         # Draw vertical lines
         for y in range(0, len(scene.mapData[0]) * TILE_SIZE, TILE_SIZE):
-            arcade.draw_line(y, self.screen_height, y, self.screen_height - (len(scene.mapData) * TILE_SIZE), arcade.color.LIGHT_GRAY)
+            arcade.draw_line(y, Render.screen_height, y, Render.screen_height - (len(scene.mapData) * TILE_SIZE), arcade.color.LIGHT_GRAY)
 
     def draw_stats(self):
         """Draw FPS counter and general game stats in the top-right corner."""
@@ -228,7 +230,7 @@ class GameLoop(arcade.Window):
         for row_index, row in enumerate(scene.mapData):
             for col_index, tile in enumerate(row):
                 x = col_index * TILE_SIZE
-                y = self.screen_height - (row_index * TILE_SIZE)  # Invert y-axis to match screen    coordinates
+                y = Render.screen_height - (row_index * TILE_SIZE)  # Invert y-axis to match screen    coordinates
 
                 if tile == '█':  # Wall
                     color = arcade.color.GRAY

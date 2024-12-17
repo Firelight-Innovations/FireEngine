@@ -119,13 +119,13 @@ class player():
             new_y += direction_y * move_speed
             if not self.check_collision(new_x * main.TILE_SIZE, new_y * main.TILE_SIZE):  # Only update if no collision detected
                 self.player_x = new_x
-                self.layer_y = new_y
+                self.player_y = new_y
 
         if self.move_down:  # Move backward
             new_x -= direction_x * move_speed
             new_y -= direction_y * move_speed
             if not self.check_collision(new_x * main.TILE_SIZE, new_y * main.TILE_SIZE):  # Only update if no collision detected
-                self.layer_x = new_x
+                self.player_x = new_x
                 self.player_y = new_y
 
         # Strafe left (A key) or right (D key)
@@ -146,8 +146,6 @@ class player():
             if not self.check_collision(new_x * main.TILE_SIZE, new_y * main.TILE_SIZE):  # Only update if no collision detected
                 self.player_x = new_x
                 self.player_y = new_y
-
-        # print(f'Update Player! {self.player_x} {self.player_y}')
 
     def check_collision(self, x: float, y: float):
         """Check if the player's bounding box collides with any walls."""

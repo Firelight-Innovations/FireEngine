@@ -1,5 +1,8 @@
 registered_objects = []
 
+from singleton import singleton
+
+@singleton
 class GameManager:
     def __init__(self):
         return
@@ -70,6 +73,7 @@ class GameManager:
     ##########################
     #   WORLD INTERACTIONS   #
     ##########################
+    
     def on_shoot(self):
         """Calls 'on_shoot' on all registered objects."""
         self.call_function("on_shoot")

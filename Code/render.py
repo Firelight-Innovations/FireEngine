@@ -269,8 +269,5 @@ class render():
     ########################
 
     def on_render(self):
-        import main
-        #print(self.player.player_x)
-        print(main.Player.player_x)
         self.draw_walls()
         self.draw_sprites()
