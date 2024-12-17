@@ -1,7 +1,9 @@
 import math
 from FireEngine.core.decorators import singleton
+from FireEngine.core.decorators import register
 
 @singleton
+@register
 class interact:
     def __init__(self):
         pass

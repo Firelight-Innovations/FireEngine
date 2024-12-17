@@ -16,10 +16,6 @@ import arcade.color
 import arcade.color
 import arcade.key
 import os
-import sys
-
-# Importing other scripts
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "FireEngine"))
 
 from FireEngine.core import scene
 from FireEngine.core import manager
@@ -58,17 +54,7 @@ class GameLoop(arcade.Window):
 
         # Inits singleton classes and registers it with the Game manager
         Game.register(Resource)
-        Game.start()
-        Game.unregister(Resource)
-
-        Game.register(Player)
-        Game.register(Render)
-        Game.register(Debug)
-        Game.register(GameUI)
-        Game.register(Music)
-        Game.register(Interact)
         Game.register(SpriteInit)
-
         Game.start()
 
     def on_update(self, delta_time):
@@ -130,7 +116,7 @@ class GameLoop(arcade.Window):
 # Main function to start the Game
 def main():
     """Main function to set up and run the Game."""
-    Game = GameLoop()
+    game = GameLoop()
     arcade.run()
 
 if __name__ == "__main__":

@@ -4,12 +4,10 @@ import arcade
 import sys
 import math
 from FireEngine.core.decorators import singleton
+from FireEngine.core.decorators import register
 
 # Importing other scripts
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "FireEngine"))
-
-# Importing assets 
-DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "Assets")
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -20,8 +18,10 @@ NUM_RAYS = 200     # Number of rays casted for rendering
 MAX_DEPTH = 30
 
 @singleton
+@register
 class render():
     def __init__(self, player_instance):
+        import main
 
         self.screen_width = SCREEN_WIDTH
         self.screen_height = SCREEN_HEIGHT
@@ -32,11 +32,11 @@ class render():
         self.player = player_instance
 
         # Texture loading
-        self.wall_texture = os.path.join(DIR, "Textures\\Surfaces\\wolf_bricks.png")
-        self.door_closed_texture = os.path.join(DIR, "Textures\\Surfaces\\Door.png")
-        self.door_open_texture = os.path.join(DIR, "Textures\\Surfaces\\Open_Door.png")
-        self.floor_texture = os.path.join(DIR, "Textures\\Surfaces\\wolf_cobble_floor.png")
-        self.ceiling_texture = os.path.join(DIR, "Textures\\Surfaces\\wolf_cobble_floor.png")
+        self.wall_texture = os.path.join(main.DIR, "Textures\\Surfaces\\wolf_bricks.png")
+        self.door_closed_texture = os.path.join(main.DIR, "Textures\\Surfaces\\Door.png")
+        self.door_open_texture = os.path.join(main.DIR, "Textures\\Surfaces\\Open_Door.png")
+        self.floor_texture = os.path.join(main.DIR, "Textures\\Surfaces\\wolf_cobble_floor.png")
+        self.ceiling_texture = os.path.join(main.DIR, "Textures\\Surfaces\\wolf_cobble_floor.png")
 
     def draw_sprites(self):
         from FireEngine import sprite

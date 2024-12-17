@@ -1,23 +1,15 @@
-import random
-import os
-import time
-import arcade
-import sys
-import math
 from FireEngine.core.decorators import singleton
-
-# Importing other scripts
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "FireEngine"))
-
-# Importing assets 
-DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "Assets")
+from FireEngine.core.decorators import register
 
 @singleton
+@register
 class player():
     def __init__(self):
         from FireEngine.core import scene
         from FireEngine.core import render
         from FireEngine.core import resource_loading as res_load
+        import main
+        import os
 
         #########################
         #   PLAYER ATTRIBUTES   #
@@ -65,7 +57,7 @@ class player():
         self.frame_time = 0.0
 
         # Footstep sounds
-        self.footsteps_folder_path = os.path.join(DIR, "Sounds\\Player\\Footsteps")
+        self.footsteps_folder_path = os.path.join(main.DIR, "Sounds\\Player\\Footsteps")
         self.footstep_sounds = res_load.load_folder_sounds(self.footsteps_folder_path)
         self.last_footstep_time = 0  # To manage cooldown between footsteps
         self.footstep_cooldown = 0.4  # Minimum time between footsteps (in seconds)
@@ -85,14 +77,14 @@ class player():
         self.bob_speed = 5  # Speed of bobbing motion  
 
         # Gun animation loading
-        self.gun_animation_frames = res_load.load_animation(os.path.join(DIR, "Textures\\Guns\\Pistol"))
+        self.gun_animation_frames = res_load.load_animation(os.path.join(main.DIR, "Textures\\Guns\\Pistol"))
         self.current_frame_index = 0  # Track the current frame of the animation
         self.animation_timer = 0      # Timer to control frame rate
         self.animation_speed = 0.07   # Time (in seconds) between frames
         self.is_shooting = False      # Flag to indicate if the gun is animating
 
         # Gun sounds
-        self.gun_sounds = res_load.load_folder_sounds(os.path.join(DIR, "Sounds\\Player\\Guns\\Pistol"))
+        self.gun_sounds = res_load.load_folder_sounds(os.path.join(main.DIR, "Sounds\\Player\\Guns\\Pistol"))
 
         #####################
         #   SCREEN EFFECT   #
@@ -104,6 +96,7 @@ class player():
     def update_player_position(self, delta_time: float):
         """Update player position based on movement flags and camera rotation."""
         import main
+        import math
 
         move_speed = min(self.player_speed / main.TILE_SIZE, main.TILE_SIZE / 10) * delta_time * 35 # Ensure small steps relative to tile size
         # Calculate direction vector based on player's current angle
@@ -180,18 +173,25 @@ class player():
 
     def play_random_footstep(self):
         """Play a random footstep sound."""
+        import random
+        import arcade
+
         if self.footstep_sounds:
             random_sound = random.choice(self.footstep_sounds)
             arcade.play_sound(random_sound, volume=0.2)  #  Adjust volume as needed
 
     def play_gun_sound(self):
         """Play a random gun sound."""
+        import random
+        import arcade
+
         if self.gun_sounds:
             random_sound = random.choice(self.gun_sounds)
             arcade.play_sound(random_sound, volume=0.5)  # Adjust volume as needed
 
     def gun_logic(self, delta_time):
         from FireEngine.core import render
+        import math
 
         # Bobs gun as player moves
         if self.is_moving:
@@ -225,6 +225,7 @@ class player():
         from FireEngine import sprite
         from FireEngine.core import scene
         from FireEngine.core import render
+        import math
         
         # Play a gun sound when shooting
         if self.current_frame_index != 0:
@@ -319,7 +320,10 @@ class player():
     #   Update functions   #
     ########################
 
-    def on_update(self, delta_time: float):        
+    def on_update(self, delta_time: float): 
+        import math
+        import time
+
         # Update player position based on movement flags
         self.update_player_position(delta_time=delta_time)
 
@@ -366,6 +370,7 @@ class player():
 
     def on_render(self):
         from FireEngine.core import render
+        import arcade
 
         self.priority = 1
 
