@@ -99,3 +99,5 @@ class game_manager:
     def interact(self):
         """Calls 'on_interact' on all registered objects."""
         self.call_function("on_interact")
+
+Game = game_manager()

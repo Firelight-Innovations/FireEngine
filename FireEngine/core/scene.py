@@ -1,3 +1,5 @@
+TILE_SIZE = 20  # Size of each tile on the map
+
 # Wall: '█'
 # Door: '░'
 # Open door: '░'

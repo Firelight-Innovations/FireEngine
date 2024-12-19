@@ -3,25 +3,23 @@ import os
 
 from FireEngine.core.decorators import singleton
 from FireEngine.core.decorators import register
-
-# Importing assets 
-DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "Assets")
+from FireEngine.core.resources import resource_loading
 
 @singleton
 @register
 class game_ui():
     def __init__(self):
         # UI Texture Loading
-        self.crosshair = os.path.join(DIR, "Textures\\UI\\crosshair.png")
+        self.crosshair = os.path.join(resource_loading.Assets, "Textures\\UI\\crosshair.png")
 
     def on_render(self):
-        import main
+        from FireEngine.player import player
 
         self.priority = 3
 
         # Draws health
         arcade.draw_text(
-            f'Health: {round(main.Player.health)}',
+            f'Health: {round(player.Player.health)}',
             20,
             20,
             arcade.color.BLACK,
@@ -42,3 +40,5 @@ class game_ui():
             height=crosshair_tex.height // 2,
             texture=crosshair_tex
         )
+
+GameUI = game_ui()

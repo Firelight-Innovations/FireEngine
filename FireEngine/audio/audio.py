@@ -4,16 +4,15 @@ import os
 
 from FireEngine.core.decorators import singleton
 from FireEngine.core.decorators import register
-
-# Importing assets 
-DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "Assets")
+from FireEngine.core.resources import resource_loading
 
 @singleton
 @register
 class music():
     def __init__(self):
+
         # Audio Loading
-        self.songs_folder_path = os.path.join(DIR, "Sounds\\Music")
+        self.songs_folder_path = os.path.join(resource_loading.Assets, "Sounds\\Music")
         self.songs = self.get_music_files()
         random.shuffle(self.songs)  # Shuffle the song list randomly
         self.current_song_index = 0
@@ -47,3 +46,5 @@ class music():
 
     def on_update(self, delta_time):
         self.play_next_song()
+
+Music = music()

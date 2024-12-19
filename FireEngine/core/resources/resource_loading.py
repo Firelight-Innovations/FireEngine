@@ -1,7 +1,8 @@
 import arcade
 import os
 from FireEngine.core.decorators import singleton
-from FireEngine.core.decorators import register
+
+Assets = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Assets")
 
 # Resource loading
 def load_animation(folder_path, return_paths=False):
@@ -51,4 +52,4 @@ class resource_loading:
     def on_start(self):
         import main
         # Clear out texture Cache
-        delete_all_files_in_directory(os.path.join(main.DIR, "Cache"))
+        delete_all_files_in_directory(os.path.join(Assets, "Cache"))

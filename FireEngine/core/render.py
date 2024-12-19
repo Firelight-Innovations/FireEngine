@@ -1,13 +1,7 @@
 import os
-from tkinter import Image
-import arcade
-import sys
 import math
 from FireEngine.core.decorators import singleton
 from FireEngine.core.decorators import register
-
-# Importing other scripts
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "FireEngine"))
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -20,8 +14,9 @@ MAX_DEPTH = 30
 @singleton
 @register
 class render():
-    def __init__(self, player_instance):
-        import main
+    def __init__(self):
+        from FireEngine.core.resources import resource_loading
+        from FireEngine.player import player
 
         self.screen_width = SCREEN_WIDTH
         self.screen_height = SCREEN_HEIGHT
@@ -29,26 +24,28 @@ class render():
         # Initialize ZBuffer as a list with length equal to screen width
         self.z_buffer = [float('inf')] * self.screen_width
 
-        self.player = player_instance
+        self.player = player.Player
 
         # Texture loading
-        self.wall_texture = os.path.join(main.DIR, "Textures\\Surfaces\\wolf_bricks.png")
-        self.door_closed_texture = os.path.join(main.DIR, "Textures\\Surfaces\\Door.png")
-        self.door_open_texture = os.path.join(main.DIR, "Textures\\Surfaces\\Open_Door.png")
-        self.floor_texture = os.path.join(main.DIR, "Textures\\Surfaces\\wolf_cobble_floor.png")
-        self.ceiling_texture = os.path.join(main.DIR, "Textures\\Surfaces\\wolf_cobble_floor.png")
+        self.wall_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_bricks.png")
+        self.door_closed_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\Door.png")
+        self.door_open_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\Open_Door.png")
+        self.floor_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_cobble_floor.png")
+        self.ceiling_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_cobble_floor.png")
 
     def draw_sprites(self):
-        from FireEngine.objects import sprite
+        from FireEngine.objects import entity
+        from FireEngine.player import player
         import main
+        import arcade
             
-        sprite.sprite_count = 0
+        entity.sprite_count = 0
         # Step 1: Sort sprites by distance from the player
         sprite_distances = []
 
-        for spr in sprite.sprites:
+        for spr in entity.sprites:
                 # Calculate distance from player to each sprite (squared distance to avoid sqrt)
-                dist = (spr.x - main.Player.player_x) ** 2 + (spr.y - main.Player.player_y) ** 2
+                dist = (spr.x - player.Player.player_x) ** 2 + (spr.y - player.Player.player_y) ** 2
                 sprite_distances.append((spr, dist))
 
         # Sort sprites by distance (farthest to nearest)
@@ -58,15 +55,15 @@ class render():
         for spri, _ in sprite_distances:
             try:
                 # Translate sprite position relative to player
-                sprite_x = spri.x - main.Player.player_x
-                sprite_y = spri.y - main.Player.player_y
+                sprite_x = spri.x - player.Player.player_x
+                sprite_y = spri.y - player.Player.player_y
 
                 # print(f'{main.Player.player_x}')
 
                 # Apply camera transformation (inverse of camera matrix)
-                inv_det = 1.0 / (main.Player.plane_x * main.Player.dir_y - main.Player.dir_x * main.Player.plane_y)
-                transform_x = inv_det * (main.Player.dir_y * sprite_x - main.Player.dir_x * sprite_y)
-                transform_y = inv_det * (-main.Player.plane_y * sprite_x + main.Player.plane_x * sprite_y)
+                inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
+                transform_x = inv_det * (player.Player.dir_y * sprite_x - player.Player.dir_x * sprite_y)
+                transform_y = inv_det * (-player.Player.plane_y * sprite_x + player.Player.plane_x * sprite_y)
 
                 # Check if the sprite is in front of the player (transform_y > 0)
                 if transform_y <= 0:
@@ -91,7 +88,7 @@ class render():
                 texture = spri.texture
                 texture_width = texture.width
                 texture_height = texture.height
-                sprite.sprite_count += 1
+                entity.sprite_count += 1
 
                 # Step 4: Draw each vertical stripe of the sprite if it's closer than walls (using ZBuffer)
                 for stripe in range(draw_start_x, draw_end_x):
@@ -140,10 +137,12 @@ class render():
     def draw_walls(self):
         """Cast rays from the player's position and render walls with correct depth."""
         from FireEngine.core import scene
+        from FireEngine.player import player
         import main
+        import arcade
 
         # Starting angle for the first ray (leftmost ray in player's FOV)
-        ray_angle = main.Player.player_angle - FOV / 2
+        ray_angle = player.Player.player_angle - FOV / 2
 
         self.z_buffer.clear()
 
@@ -154,8 +153,8 @@ class render():
             ray_dir_y = math.sin(ray_angle)
 
             # Player's current position in grid units
-            map_x = int(main.Player.player_x)
-            map_y = int(main.Player.player_y)
+            map_x = int(player.Player.player_x)
+            map_y = int(player.Player.player_y)
 
             # Distance increments for each step along x and y axes
             delta_dist_x = abs(1 / ray_dir_x) if ray_dir_x != 0 else float('inf')
@@ -164,17 +163,17 @@ class render():
             # Calculate step direction and initial side distances
             if ray_dir_x < 0:
                 step_x = -1
-                side_dist_x = (main.Player.player_x - map_x) * delta_dist_x
+                side_dist_x = (player.Player.player_x - map_x) * delta_dist_x
             else:
                 step_x = 1
-                side_dist_x = (map_x + 1.0 - main.Player.player_x) * delta_dist_x
+                side_dist_x = (map_x + 1.0 - player.Player.player_x) * delta_dist_x
 
             if ray_dir_y < 0:
                 step_y = -1
-                side_dist_y = (main.Player.player_y - map_y) * delta_dist_y
+                side_dist_y = (player.Player.player_y - map_y) * delta_dist_y
             else:
                 step_y = 1
-                side_dist_y = (map_y + 1.0 - main.Player.player_y) * delta_dist_y
+                side_dist_y = (map_y + 1.0 - player.Player.player_y) * delta_dist_y
 
             # Perform DDA to find where the ray hits a wall
             hit = False
@@ -195,17 +194,17 @@ class render():
             epsilon = 0.0001
 
             epsilon = 1e-6
-            inv_det = 1.0 / (main.Player.plane_x * main.Player.dir_y - main.Player.dir_x * main.Player.plane_y)
+            inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
 
             if abs(inv_det) < epsilon:
                 continue
 
             if side == 0:
-                perp_wall_dist = max((map_x - main.Player.player_x + (1 - step_x) / 2) / (ray_dir_x + epsilon), epsilon)
+                perp_wall_dist = max((map_x - player.Player.player_x + (1 - step_x) / 2) / (ray_dir_x + epsilon), epsilon)
             else:
-                perp_wall_dist = max((map_y - main.Player.player_y + (1 - step_y) / 2) / (ray_dir_y + epsilon), epsilon)
+                perp_wall_dist = max((map_y - player.Player.player_y + (1 - step_y) / 2) / (ray_dir_y + epsilon), epsilon)
 
-            perp_wall_dist *= math.cos(ray_angle - main.Player.player_angle)
+            perp_wall_dist *= math.cos(ray_angle - player.Player.player_angle)
 
             # Store this distance in ZBuffer for this column of pixels
             self.z_buffer.append(perp_wall_dist)
@@ -218,9 +217,9 @@ class render():
             ray_screen_position = int(ray * self.screen_width / NUM_RAYS)
 
             if side == 0:
-                wall_x = main.Player.player_y + (map_x - main.Player.player_x + (1 - step_x) / 2) / ray_dir_x * ray_dir_y
+                wall_x = player.Player.player_y + (map_x - player.Player.player_x + (1 - step_x) / 2) / ray_dir_x * ray_dir_y
             else:
-                wall_x = main.Player.player_x + (map_y - main.Player.player_y + (1 - step_y) / 2) / ray_dir_y * ray_dir_x 
+                wall_x = player.Player.player_x + (map_y - player.Player.player_y + (1 - step_y) / 2) / ray_dir_y * ray_dir_x 
 
             wall_x %= 1
 
@@ -267,6 +266,9 @@ class render():
     def draw_floor(self):
         """Render textured floor using a raycasting-like approach."""
         import main
+        import arcade
+        from tkinter import Image
+
         # Load floor texture from disk
         floor_tex = arcade.load_texture(self.floor_texture)
         texture_image = floor_tex.image  # Get the Pillow image     object of the texture
@@ -336,6 +338,8 @@ class render():
     ########################
 
     def on_render(self):
+        import arcade
+
         self.priority = 0
 
         # Draws floor
@@ -358,3 +362,5 @@ class render():
 
         self.draw_walls()
         self.draw_sprites()
+
+Render = render()
