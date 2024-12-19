@@ -22,12 +22,12 @@ class debug():
         # Define the grid size (matches TILE_SIZE)
 
         # Draw horizontal lines
-        for x in range(render.Render.screen_height, render.Render.screen_height - (len(scene.mapData) * scene.TILE_SIZE), - scene.TILE_SIZE):
-            arcade.draw_line(0, x, len(scene.mapData[0]) * scene.TILE_SIZE, x, arcade.color.LIGHT_GRAY)
+        for x in range(render.Render.screen_height, render.Render.screen_height - (len(scene.scene_data) * scene.TILE_SIZE), - scene.TILE_SIZE):
+            arcade.draw_line(0, x, len(scene.scene_data[0]) * scene.TILE_SIZE, x, arcade.color.LIGHT_GRAY)
 
         # Draw vertical lines
-        for y in range(0, len(scene.mapData[0]) * scene.TILE_SIZE, scene.TILE_SIZE):
-            arcade.draw_line(y, render.Render.screen_height, y, render.Render.screen_height - (len(scene.mapData) * scene.TILE_SIZE), arcade.color.LIGHT_GRAY)
+        for y in range(0, len(scene.scene_data[0]) * scene.TILE_SIZE, scene.TILE_SIZE):
+            arcade.draw_line(y, render.Render.screen_height, y, render.Render.screen_height - (len(scene.scene_data) * scene.TILE_SIZE), arcade.color.LIGHT_GRAY)
 
     def draw_stats(self):
         """Draw FPS counter and general game stats in the top-right corner."""
@@ -38,7 +38,7 @@ class debug():
         
         # Display FPS in top-right corner
         arcade.draw_text(
-            f"FPS: {self.fps:.1f} \nPlayer X: {player.Player.player_x:.1f} \nPlayer Y: {player.Player.player_y:.1f} \nPlayer Rot: {(player.Player.player_angle * (180 / math.pi)):.1f}º \nSprites on Screen: {(entity.sprite_count)}", 
+            f"FPS: {self.fps:.1f} \nPlayer X: {player.Player.player_x:.1f} \nPlayer Y: {player.Player.player_y:.1f} \nPlayer Rot: {(player.Player.player_angle * (180 / math.pi)):.1f}º \nSprites on Screen: {(entity.entity_count)}", 
             10, 
             render.SCREEN_HEIGHT - 20, 
             arcade.color.BLACK
@@ -48,7 +48,7 @@ class debug():
         from FireEngine.core import scene
         from FireEngine.core import render
 
-        for row_index, row in enumerate(scene.mapData):
+        for row_index, row in enumerate(scene.scene_data):
             for col_index, tile in enumerate(row):
                 x = col_index * scene.TILE_SIZE
                 y = render.SCREEN_HEIGHT - (row_index * scene.TILE_SIZE)  # Invert y-axis to match screen    coordinates

@@ -33,62 +33,59 @@ class render():
         self.floor_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_cobble_floor.png")
         self.ceiling_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_cobble_floor.png")
 
-    def draw_sprites(self):
+    def draw_entities(self):
         from FireEngine.objects import entity
         from FireEngine.player import player
-        import main
         import arcade
             
-        entity.sprite_count = 0
+        entity.entity_count = 0
         # Step 1: Sort sprites by distance from the player
-        sprite_distances = []
+        entity_distances = []
 
-        for spr in entity.sprites:
+        for ent in entity.entities:
                 # Calculate distance from player to each sprite (squared distance to avoid sqrt)
-                dist = (spr.x - player.Player.player_x) ** 2 + (spr.y - player.Player.player_y) ** 2
-                sprite_distances.append((spr, dist))
+                dist = (ent.x - player.Player.player_x) ** 2 + (ent.y - player.Player.player_y) ** 2
+                entity_distances.append((ent, dist))
 
         # Sort sprites by distance (farthest to nearest)
-        sprite_distances.sort(key=lambda s: s[1], reverse=True)
+        entity_distances.sort(key=lambda s: s[1], reverse=True)
 
         # Step 2: Loop through each sprite and project it onto the screen
-        for spri, _ in sprite_distances:
+        for enti, _ in entity_distances:
             try:
                 # Translate sprite position relative to player
-                sprite_x = spri.x - player.Player.player_x
-                sprite_y = spri.y - player.Player.player_y
-
-                # print(f'{main.Player.player_x}')
+                entity_x = enti.x - player.Player.player_x
+                entity_y = enti.y - player.Player.player_y
 
                 # Apply camera transformation (inverse of camera matrix)
                 inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
-                transform_x = inv_det * (player.Player.dir_y * sprite_x - player.Player.dir_x * sprite_y)
-                transform_y = inv_det * (-player.Player.plane_y * sprite_x + player.Player.plane_x * sprite_y)
+                transform_x = inv_det * (player.Player.dir_y * entity_x - player.Player.dir_x * entity_y)
+                transform_y = inv_det * (-player.Player.plane_y * entity_x + player.Player.plane_x * entity_y)
 
                 # Check if the sprite is in front of the player (transform_y > 0)
                 if transform_y <= 0:
                     continue
                 
                 # Step 3: Project the sprite onto the screen
-                sprite_screen_x = int((self.screen_width / 2) * (1 + transform_x / transform_y))
+                entity_screen_x = int((self.screen_width / 2) * (1 + transform_x / transform_y))
 
                 # Calculate height and width of the sprite on screen
-                sprite_height = abs(int(self.screen_height / transform_y))  # Correct scaling based on depth
-                sprite_width = abs(int(self.screen_height / transform_y * (self.screen_width / self.screen_height)))
+                entity_height = abs(int(self.screen_height / transform_y))  # Correct scaling based on depth
+                entity_width = abs(int(self.screen_height / transform_y * (self.screen_width / self.screen_height)))
 
                 # Calculate vertical start and end positions for drawing the sprite
-                draw_start_y = max(0, self.screen_height // 2 - sprite_height // 2)
-                draw_end_y = min(self.screen_height, self.screen_height // 2 + sprite_height // 2)
+                draw_start_y = max(0, self.screen_height // 2 - entity_height // 2)
+                draw_end_y = min(self.screen_height, self.screen_height // 2 + entity_height // 2)
 
                 # Calculate horizontal start and end positions for drawing the sprite
-                draw_start_x = int(sprite_screen_x - (sprite_width / 2))
-                draw_end_x = int(sprite_screen_x + (sprite_width / 2))
+                draw_start_x = int(entity_screen_x - (entity_width / 2))
+                draw_end_x = int(entity_screen_x + (entity_width / 2))
 
                 # sprite.death_animation[sprite.current_death_frame]
-                texture = spri.texture
+                texture = enti.texture
                 texture_width = texture.width
                 texture_height = texture.height
-                entity.sprite_count += 1
+                entity.entity_count += 1
 
                 # Step 4: Draw each vertical stripe of the sprite if it's closer than walls (using ZBuffer)
                 for stripe in range(draw_start_x, draw_end_x):
@@ -114,7 +111,7 @@ class render():
 
                                 # Load only a vertical slice of the texture using arcade.load_texture()
                                 texture_slice_arcade = arcade.load_texture(
-                                    file_name=spri.texture_path,
+                                    file_name=enti.texture_path,
                                     x=texture_column,
                                     y=0,
                                     width=1,
@@ -126,7 +123,7 @@ class render():
                                     center_x=stripe * (self.screen_width / NUM_RAYS) / 4,
                                     center_y=(draw_start_y + draw_end_y) // 2,
                                     width=1,
-                                    height=sprite_height,
+                                    height=entity_height,
                                     texture=texture_slice_arcade,
                                     angle=0,
                                     alpha=255
@@ -138,7 +135,6 @@ class render():
         """Cast rays from the player's position and render walls with correct depth."""
         from FireEngine.core import scene
         from FireEngine.player import player
-        import main
         import arcade
 
         # Starting angle for the first ray (leftmost ray in player's FOV)
@@ -187,7 +183,7 @@ class render():
                     map_y += step_y
                     side = 1  # Hit was on a y-side (horizontal wall)
 
-                if scene.mapData[map_y][map_x] == '█' or scene.mapData[map_y][map_x] == '▓':
+                if scene.scene_data[map_y][map_x] == '█' or scene.scene_data[map_y][map_x] == '▓':
                     hit = True
 
             # Calculate distance from player to wall using perpendicular distance correction
@@ -225,11 +221,11 @@ class render():
 
             texture_path = ''
 
-            if(scene.mapData[map_y][map_x] == '█'):
+            if(scene.scene_data[map_y][map_x] == '█'):
                 texture_path = self.wall_texture
-            elif scene.mapData[map_y][map_x] == '▓':
+            elif scene.scene_data[map_y][map_x] == '▓':
                 texture_path = self.door_closed_texture
-            elif scene.mapData[map_y][map_x] == '░':
+            elif scene.scene_data[map_y][map_x] == '░':
                 texture_path = self.door_open_texture
 
             # Determine which part of texture to sample using wall hit position (wall_x)
@@ -361,6 +357,6 @@ class render():
         )
 
         self.draw_walls()
-        self.draw_sprites()
+        self.draw_entities()
 
 Render = render()

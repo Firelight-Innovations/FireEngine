@@ -1,34 +1,9 @@
-import os
-import sys
-
 from FireEngine.core.decorators import singleton
 from FireEngine.core.decorators import register
 
 # List of sprites in the game world
-sprites = []
-sprite_count = 0
-
-@singleton
-@register
-class entity_init:
-    def __init__(self):
-        pass
-
-    def on_start(self):
-        from FireEngine.core import scene
-        from FireEngine.core.resources import resource_loading
-
-        # Sprite Texture Loading
-        guard = os.path.join(resource_loading.Assets, "Textures\\Sprites\\Guard\\guard_sheet.png")
-
-        # Create a list of sprites with their positions in the game world
-        for y in range(len(scene.mapData)):
-            for x in range(len(scene.mapData[0])):
-                if scene.mapData[y][x] == '$':
-                    scene.mapData[y] = scene.mapData[y][:x] + ' ' + scene.mapData[y][x+1:]
-                    entity(x, y, 0, 0.3, 0.3, guard, health=100) # Instantiates a new sprite object, inherits from the sprite class
-
-EntityInit = entity_init()
+entities = []
+entity_count = 0
 
 @register
 class entity:
@@ -37,8 +12,9 @@ class entity:
         from FireEngine.core.resources import resource_loading
         import arcade
         import random
+        import os
 
-        sprites.append(self)
+        entities.append(self)
 
         self.x = float(x + 0.5)
         self.y = float(y + 0.5)
@@ -79,26 +55,27 @@ class entity:
         self.no_fire_frame_duration = random.uniform(1, 8) / 10
 
         # Audio
-        self.gun_shot = arcade.load_sound(os.path.join(resource_loading.Assets, "Sounds\\Enemies\\Gun\\Pistol Single Shot.wav"))
+        self.gun_shot = arcade.load_sound(os.path.join(resource_loading.Assets, "Audio\\Enemies\\Gun\\Pistol Single Shot.wav"))
 
         # Textures
         self.texture = self.shoot_ani[1]
         self.texture_path = self.shoot_ani_path[1]
 
         # Load gore/scream sounds
-        self.gore_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Sounds\\Enemies\\Gore"))
+        self.gore_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Audio\\Enemies\\Gore"))
 
         # Load specific death sound
-        self.scream_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Sounds\\Enemies\\Scream"))
+        self.scream_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Audio\\Enemies\\Scream"))
 
         # Load specific death sound
-        self.death_sound = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Sounds\\Enemies\\Death"))
+        self.death_sound = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Audio\\Enemies\\Death"))
 
     def load_animations(self, path):
         '''Loads all animations and textures from a sprite sheet'''
         from FireEngine.core.resources import resource_loading
         import arcade
         import random
+        import os
 
         walk_ani_0 = []
         walk_ani_0_path = []
@@ -154,7 +131,7 @@ class entity:
                     loop = not all(pixel == (0, 0, 0, 0) for pixel in image.getdata())
 
                     if loop:
-                        output_folder = os.path.join(resource_loading.Assets, "Cache")
+                        output_folder = os.path.join(resource_loading.Cache)
                         output_file = f"{x}{y}{i}{j}-{height * random.randint(0, 10)}.png"
 
                         # Ensure the folder exists
@@ -210,7 +187,8 @@ class entity:
     def update_texture(self, player_x, player_y):
         '''Updates the enemies texture based on a rotation, movement, and status.'''
         import math
-         # Step 1: Calculate direction vector from enemy to player
+
+        # Step 1: Calculate direction vector from enemy to player
         dx = player_x - self.x
         dy = player_y - self.y
 
@@ -307,7 +285,7 @@ class entity:
                 for dx in range(-5, 6):
                     target_x = int(self.x + dx)
                     target_y = int(self.y + dy)
-                    if self.can_see(target_x, target_y) and scene.mapData[target_y][target_x] == ' ':
+                    if self.can_see(target_x, target_y) and scene.scene_data[target_y][target_x] == ' ':
                         valid_tiles.append((target_x + 0.5, target_y + 0.5))
     
             if valid_tiles:
@@ -364,7 +342,7 @@ class entity:
             map_x, map_y = int(ray_x), int(ray_y)
 
             # Check for out-of-bounds access
-            if map_x < 0 or map_x >= len(scene.mapData[0]) or map_y < 0 or map_y >= len(scene.mapData):
+            if map_x < 0 or map_x >= len(scene.scene_data[0]) or map_y < 0 or map_y >= len(scene.scene_data):
                 return False
 
             # Check if we've reached the target tile
@@ -372,7 +350,7 @@ class entity:
                 return True
 
             # Check for walls blocking the view
-            if scene.mapData[map_y][map_x] in ('█', '▓'):
+            if scene.scene_data[map_y][map_x] in ('█', '▓'):
                 return False
 
         return False  # Target is out of maximum range or blocked by walls
@@ -471,8 +449,8 @@ class entity:
 
             # Remove sprite once animation is complete
             if self.death_timer  >= (len(self.death_animation) * self.death_frame_duration) + 5:
-                if self in sprites:
-                    sprites.remove(self)
+                if self in entities:
+                    entities.remove(self)
                     manager.Game.unregister(self)
 
         self.patrol(delta_time, player.Player.player_x, player.Player.player_y)
@@ -480,5 +458,3 @@ class entity:
         # Check if the enemy should shoot at the player
         self.update_texture(player_x=player.Player.player_x, player_y=player.Player.player_y)
         self.shoot_at_player(delta_time, player.Player)
-
-EntityInit = entity_init()

@@ -23,8 +23,8 @@ class player():
         #   CAMERA & MOVEMENT  #
         ########################
 
-        self.player_x = scene.get_player_spawn_x()
-        self.player_y = scene.get_player_spawn_y()
+        self.player_x = 1.5
+        self.player_y = 1.5
         self.player_angle = 0
 
         self.player_rotate_speed = 2
@@ -56,7 +56,7 @@ class player():
         self.frame_time = 0.0
 
         # Footstep sounds
-        self.footsteps_folder_path = os.path.join(resource_loading.Assets, "Sounds\\Player\\Footsteps")
+        self.footsteps_folder_path = os.path.join(resource_loading.Assets, "Audio\\Player\\Footsteps")
         self.footstep_sounds = resource_loading.load_folder_sounds(self.footsteps_folder_path)
         self.last_footstep_time = 0  # To manage cooldown between footsteps
         self.footstep_cooldown = 0.4  # Minimum time between footsteps (in seconds)
@@ -83,7 +83,7 @@ class player():
         self.is_shooting = False      # Flag to indicate if the gun is animating
 
         # Gun sounds
-        self.gun_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Sounds\\Player\\Guns\\Pistol"))
+        self.gun_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Audio\\Player\\Guns\\Pistol"))
 
         #####################
         #   SCREEN EFFECT   #
@@ -161,11 +161,11 @@ class player():
             map_y = int(corner_y // scene.TILE_SIZE)
 
             # Ensure we're not out of bounds
-            if map_x < 0 or map_x >= len(scene.mapData[0]) or map_y < 0 or map_y >= len(scene.mapData):
+            if map_x < 0 or map_x >= len(scene.scene_data[0]) or map_y < 0 or map_y >= len(scene.scene_data):
                 return True  # Treat out-of-bounds as a collision
 
             # Check if any corner is inside a wall ('█')
-            if scene.mapData[map_y][map_x] == '█' or scene.mapData[map_y][map_x] == '▓':
+            if scene.scene_data[map_y][map_x] == '█' or scene.scene_data[map_y][map_x] == '▓':
                 return True  # Collision detected
 
         return False  # No collision
@@ -286,15 +286,15 @@ class player():
                 side = 1  # Hit was on a y-side (horizontal wall)
 
             # Check if we've hit a wall ('█' or '▓')
-            if scene.mapData[map_y][map_x] == '█' or scene.mapData[map_y]   [map_x] == '▓':
+            if scene.scene_data[map_y][map_x] == '█' or scene.scene_data[map_y]   [map_x] == '▓':
                 hit_wall = True
                 break
 
-            # Check for sprite collision at this grid cell  during traversal
-            for spr in entity.sprites:
-                if int(spr.x) == map_x and int(spr.y) ==  map_y:
-                    if not spr.is_dying:
-                        spr.hurt_sprite(spr, 25, self)
+            # Check for entity collision at this grid cell  during traversal
+            for ent in entity.entities:
+                if int(ent.x) == map_x and int(ent.y) ==  map_y:
+                    if not ent.is_dying:
+                        ent.hurt_sprite(ent, 25, self)
                         return  # Stop after hitting a sprite
                         
         if not hit_wall:

@@ -1,31 +1,39 @@
-# By submitting this assignment, I agree to the following:
-#   "Aggies do not lie, cheat, or steal, or tolerate those who do."
-#   "I have not given or received any unauthorized aid on this assignment."
-#
-# Names:        
-#               Angel Vega
-#               Braden Seaborn
-#               Will Hassan
-# Section:      532
-# Assignment:   Lab 7 Activity 1
-# Date:         19 November 2024
+# Project start date: 19 November 2024
+# IMPORTANT: Classes are loaded & instantiated based on the order of imports in this file!
 
-# Imports
+# Importing depedencies 
 import arcade
 import arcade.color
 import arcade.color
 import arcade.key
 import os
 
+#############################
+#   Importing engine code   #
+#############################
+
+# Importing game manager
 from FireEngine.core import manager
-from FireEngine.core import render
+
+# Resouurce loading 
 from FireEngine.core.resources import resource_loading
+from FireEngine.core.resources import scene_loading
+from FireEngine.core.resources import entity_loading
+from FireEngine.core.resources import sprite_loading
+from FireEngine.core.resources import weapon_loading
+# Gameplay logic
+
+from FireEngine.core import render
 from FireEngine.objects import entity
 from FireEngine.objects import sprite
 from FireEngine.player import player
 from FireEngine.player import interact
 from FireEngine.ui import debug
 from FireEngine.ui import game_ui
+
+# Import all files dynamically from the game
+
+# Import all files dynamically from mods
 
 # Constants
 SCREEN_TITLE = "Minenstien"
@@ -35,7 +43,7 @@ class GameLoop(arcade.Window):
         super().__init__(render.SCREEN_WIDTH, render.SCREEN_HEIGHT, SCREEN_TITLE, resizable=True, vsync=True) # type: ignore
 
         # clears game cache
-        resource_loading.delete_all_files_in_directory(os.path.join(resource_loading.Assets, "Cache"))
+        resource_loading.delete_all_files_in_directory(resource_loading.Cache)
         manager.Game.start()
 
     def on_update(self, delta_time):

@@ -1,8 +1,15 @@
 import arcade
 import os
-from FireEngine.core.decorators import singleton
 
-Assets = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Assets")
+Assets = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Assets")
+Objects = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Objects")
+Code = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Code")
+Cache = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Cache")
+
+scenes = {}
+scene_textures = {}
+scene_objects = {}
+scene_3d_objects = {}
 
 # Resource loading
 def load_animation(folder_path, return_paths=False):
@@ -38,18 +45,3 @@ def delete_all_files_in_directory(directory_path):
                 os.remove(file_path)
     except Exception as e:
         return
-
-# Doesn't have register tag because it will run before the sprite texture loading otherwise
-@singleton
-class resource_loading:
-    def __init__(self):
-        pass
-
-    ########################
-    #   Update functions   #
-    ########################
-
-    def on_start(self):
-        import main
-        # Clear out texture Cache
-        delete_all_files_in_directory(os.path.join(Assets, "Cache"))

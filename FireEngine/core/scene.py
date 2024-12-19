@@ -7,36 +7,12 @@ TILE_SIZE = 20  # Size of each tile on the map
 # Player Spawn:'*'
 # Enemy Spawn: '$'
 
-mapData = ['██████████',
-           '█   █    █',
-           '█*  ▓  $ █',
-           '█   █    █',
-           '██████████']
+scene_data = []
 
-'''
-
-mapData = ['██████████████▓██████████████████████',
-           '█   █   $█  ██  █   $    █ █        █',
-           '█*  ▓  $ ▓   $  █        ▓ ▓   $    █',
-           '█   █    █  ██ $██████████ █     $  █',
-           '██▓███████████▓███████████ ██████████',
-           '█      $ █ $    █   $    ▓$▓     $  █',
-           '█    $   █     $█        █ █  $     █',
-           '█▓█████████████▓██████████▓██████████',
-           '█    $            $           $     █',
-           '████▓████▓███████▓███▓████▓██████████',
-           '█  $   █       █   █   $█  $      $ █',
-           '█  █   █  $█   █   █    █         $ █',
-           '█  █   █   █   █ $ █    █   $       █',
-           '█ $█ $    $█$ $█   █ $  █       $   █',
-           '█████████████████████████████████████']
-'''
-            
 def get_player_spawn_x():
     x = 0
-    y = 0
 
-    for row_index, row in enumerate(mapData):
+    for row_index, row in enumerate(scene_data):
         for col_index, tile in enumerate(row):
             x = col_index
             y = row_index# Invert y-axis to match screencoordinates
@@ -47,7 +23,7 @@ def get_player_spawn_y():
     x = 0
     y = 0
 
-    for row_index, row in enumerate(mapData):
+    for row_index, row in enumerate(scene_data):
         for col_index, tile in enumerate(row):
             x = col_index
             y = row_index# Invert y-axis to match screencoordinates
