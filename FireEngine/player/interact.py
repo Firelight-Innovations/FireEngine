@@ -22,7 +22,7 @@ class interact:
         front_y = int(player.Player.player_y + direction_y)
 
         # Check if the tile in front of the player is interactive (e.g., a door '░')
-        if scene.scene_data[front_y][front_x] == '░' or scene.scene_data[front_y][front_x] == '▓':  # Example: Door tile
+        if scene.scene_data[front_y][front_x] == 'd' or scene.scene_data[front_y][front_x] == 'D':  # Example: Door tile
             self.interact_door(front_x, front_y)  # Trigger callback to open door
 
     def interact_door(self, x, y):
@@ -30,9 +30,9 @@ class interact:
         from FireEngine.core import scene
         
         if(scene.scene_data[y][x] == '░'): # Open
-            scene.scene_data[y] = scene.scene_data[y][:x] + '▓' + scene.scene_data[y][x+1:]
+            scene.scene_data[y] = scene.scene_data[y][:x] + 'D' + scene.scene_data[y][x+1:]
         else:
-            scene.scene_data[y] = scene.scene_data[y][:x] + '░' + scene.scene_data[y][x+1:]
+            scene.scene_data[y] = scene.scene_data[y][:x] + 'd' + scene.scene_data[y][x+1:]
 
     ###############
     #   Updates   #

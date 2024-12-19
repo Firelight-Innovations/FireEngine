@@ -350,7 +350,7 @@ class entity:
                 return True
 
             # Check for walls blocking the view
-            if scene.scene_data[map_y][map_x] in ('█', '▓'):
+            if scene.scene_data[map_y][map_x] != ' ':
                 return False
 
         return False  # Target is out of maximum range or blocked by walls

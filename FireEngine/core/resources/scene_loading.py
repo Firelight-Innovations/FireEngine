@@ -22,7 +22,7 @@ from FireEngine.core.decorators import register
 @register
 class scene_loader:
     def __init__(self):
-        self.data_file = configparser.ConfigParser()
+        pass
 
     def load_scene_data(self):
         """Loads all scenes into memory"""
@@ -39,12 +39,16 @@ class scene_loader:
             for file in files:
                 if file.endswith('.dat'):  # Check if the file is a .dat file
                     data_path = os.path.join(root, file)
+                    data_file = configparser.ConfigParser()
 
-                    # Read the .ini file
-                    self.data_file.read(data_path)
+                    # Read the .dat file
+                    data_file.read(data_path)
+
+                    if data_file['Info']['type'] != 'scene':
+                        continue
 
                     scene_file_path = Path(root) / (Path(file).stem + '.scene')
-                    scene_name = self.data_file['Scene Info']['name']
+                    scene_name = data_file['Info']['name']
                     scene_data = []
 
                     # Loading .scene
@@ -54,11 +58,40 @@ class scene_loader:
 
                     # Load data from .scene & .dat into memory 
                     resource_loading.scenes[scene_name] = data_containers.scene(
-                        scene_name=scene_name,
-                        difficulty=self.data_file['Scene Info']['difficulty'],
-                        scene_order=self.data_file['Scene Info']['scene_order'],
-                        scene_data=scene_data
+                        name = scene_name,
+                        difficulty = data_file['Scene Info']['difficulty'],
+                        order = data_file['Scene Info']['scene_order'],
+                        description = data_file['Scene Info']['description'],
+                        data = scene_data
                     )
+
+    def load_texture_data(self):
+        """Loads all textures into texture list"""
+        from FireEngine.core.resources import resource_loading
+        from FireEngine.core.resources import data_containers
+
+        texture_path = os.path.join(resource_loading.Objects, "Textures")
+
+        for file in os.listdir(texture_path):
+            if file.endswith('.dat'):  # Check if the file is a .dat file
+                # Read the .dat file
+                data_file = configparser.ConfigParser()
+                data_file.read(os.path.join(texture_path, file))
+                texture_icon = data_file['Texture Info']['icon']
+
+                if data_file['Info']['type'] != 'texture':
+                    continue
+
+                # Load from .dat into memory 
+                resource_loading.textures[texture_icon] = data_containers.texture(
+                    name = data_file['Info']['name'],
+                    location= data_file['Texture Info']['location'],
+                    icon= texture_icon,
+                    hit_sfx= data_file['Audio Info']['hit_sfx'],
+                    walk_sfx= data_file['Audio Info']['walk_sfx']
+                )
+
+                print(f'Path 0: {resource_loading.textures[texture_icon].texture}')
 
     def load_scene(self, scene_name:str):
         """Loads a scene from it's name"""
@@ -67,18 +100,30 @@ class scene_loader:
         from FireEngine.objects import entity
         from FireEngine.player import player
 
-        # Loads scene data
-        scene.scene_data = resource_loading.scenes[scene_name].scene_data
+        ########################
+        #   Loads scene data   #
+        ########################
+        try:
+            scene.scene_data = resource_loading.scenes[scene_name].data
+        except:
+            scene.scene_data = resource_loading.scenes['Default Scene'].data
 
-        # Loads player data
-        player.Player.player_x = scene.get_player_spawn_x()
-        player.Player.player_y = scene.get_player_spawn_y()
+        #########################
+        #   Loads player data   #
+        #########################
+        player.Player.player_x, player.Player.player_y = scene.get_player_spawn()
 
-        # Loads texture data
+        ##########################
+        #   Loads texture data   #
+        ##########################
+        self.load_texture_data()
 
-        # Loads entity data
+        #########################
+        #   Loads entity data   #
+        #########################
         guard = os.path.join(resource_loading.Assets, "Textures\\Sprites\\Guard\\guard_sheet.png")
 
+        # Instanitates entities into memory
         for y in range(len(scene.scene_data)):
             for x in range(len(scene.scene_data[0])):
                 if scene.scene_data[y][x] == '$':
@@ -88,9 +133,11 @@ class scene_loader:
         # Loads sprite data
 
     def detect_encoding(self, file_path):
+        from FireEngine.core.resources import resource_loading
         with open(file_path, 'rb') as f:
             raw_data = f.read()
             result = chardet.detect(raw_data)
+            resource_loading.EncodingType = result['encoding']
             return result['encoding']
 
     def on_start(self):

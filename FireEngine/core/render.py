@@ -27,7 +27,7 @@ class render():
         self.player = player.Player
 
         # Texture loading
-        self.wall_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_bricks.png")
+        # self.wall_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_bricks.png")
         self.door_closed_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\Door.png")
         self.door_open_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\Open_Door.png")
         self.floor_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_cobble_floor.png")
@@ -135,6 +135,8 @@ class render():
         """Cast rays from the player's position and render walls with correct depth."""
         from FireEngine.core import scene
         from FireEngine.player import player
+        from FireEngine.core.resources import resource_loading
+        import chardet
         import arcade
 
         # Starting angle for the first ray (leftmost ray in player's FOV)
@@ -183,7 +185,7 @@ class render():
                     map_y += step_y
                     side = 1  # Hit was on a y-side (horizontal wall)
 
-                if scene.scene_data[map_y][map_x] == '█' or scene.scene_data[map_y][map_x] == '▓':
+                if scene.scene_data[map_y][map_x] != ' ':
                     hit = True
 
             # Calculate distance from player to wall using perpendicular distance correction
@@ -221,13 +223,18 @@ class render():
 
             texture_path = ''
 
-            if(scene.scene_data[map_y][map_x] == '█'):
-                texture_path = self.wall_texture
-            elif scene.scene_data[map_y][map_x] == '▓':
-                texture_path = self.door_closed_texture
-            elif scene.scene_data[map_y][map_x] == '░':
-                texture_path = self.door_open_texture
+            # determine texture to render
+            icon = scene.scene_data[map_y][map_x]
 
+            for key in resource_loading.textures:
+                if key == icon:
+                    texture_path = resource_loading.textures[key].texture
+
+            if icon == 'D':
+                texture_path = self.door_closed_texture
+            elif icon == 'd':
+                texture_path = self.door_open_texture
+                
             # Determine which part of texture to sample using wall hit position (wall_x)
             texture_width = arcade.load_texture(texture_path).width
 

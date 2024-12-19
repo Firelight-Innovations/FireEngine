@@ -6,10 +6,14 @@ Objects = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.d
 Code = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Code")
 Cache = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Cache")
 
+EncodingType = None
+
+DefaultTexture = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "FireEngine\\Default\\default.png")
+
 scenes = {}
-scene_textures = {}
-scene_objects = {}
-scene_3d_objects = {}
+textures = {}
+objects = {}
+# 3d_objects = {}
 
 # Resource loading
 def load_animation(folder_path, return_paths=False):

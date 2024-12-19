@@ -165,7 +165,7 @@ class player():
                 return True  # Treat out-of-bounds as a collision
 
             # Check if any corner is inside a wall ('█')
-            if scene.scene_data[map_y][map_x] == '█' or scene.scene_data[map_y][map_x] == '▓':
+            if scene.scene_data[map_y][map_x] != ' ':
                 return True  # Collision detected
 
         return False  # No collision
@@ -286,7 +286,7 @@ class player():
                 side = 1  # Hit was on a y-side (horizontal wall)
 
             # Check if we've hit a wall ('█' or '▓')
-            if scene.scene_data[map_y][map_x] == '█' or scene.scene_data[map_y]   [map_x] == '▓':
+            if scene.scene_data[map_y][map_x] != ' ':
                 hit_wall = True
                 break
 
