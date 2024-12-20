@@ -7,5 +7,5 @@ location=Textures\Surfaces\wolf_stone.png
 icon=S
 
 [Audio Info]
-hit_sfx=Audio\\
-walk_sfx=Audio\\
+hit_sfx=Audio\
+walk_sfx=Audio\

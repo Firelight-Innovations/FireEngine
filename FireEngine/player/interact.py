@@ -11,6 +11,7 @@ class interact:
         """Check if the player is facing an interactive object and trigger a callback."""
         from FireEngine.core import scene
         from FireEngine.player import player
+        from FireEngine.core.resources import resource_loading
         import math
 
         # Calculate the direction vector based on player's current angle
@@ -21,18 +22,24 @@ class interact:
         front_x = int(player.Player.player_x + direction_x)
         front_y = int(player.Player.player_y + direction_y)
 
-        # Check if the tile in front of the player is interactive (e.g., a door '░')
-        if scene.scene_data[front_y][front_x] == 'd' or scene.scene_data[front_y][front_x] == 'D':  # Example: Door tile
-            self.interact_door(front_x, front_y)  # Trigger callback to open door
+        tile_data = scene.scene_data[front_y][front_x]
 
-    def interact_door(self, x, y):
+        # Check if the tile in front of the player is interactive (e.g., a door '░')
+        for door in resource_loading.doors:
+            if tile_data == resource_loading.doors[door].open_icon or tile_data == resource_loading.doors[door].close_icon:
+                self.interact_door(front_x, front_y, door, tile_data) # Trigger callback to open door
+
+    def interact_door(self, x, y, door, tile):
         """Open a door at position (x, y)."""
         from FireEngine.core import scene
+        from FireEngine.core.resources import resource_loading
         
-        if(scene.scene_data[y][x] == '░'): # Open
-            scene.scene_data[y] = scene.scene_data[y][:x] + 'D' + scene.scene_data[y][x+1:]
-        else:
-            scene.scene_data[y] = scene.scene_data[y][:x] + 'd' + scene.scene_data[y][x+1:]
+        if tile == resource_loading.doors[door].open_icon:
+            # We need to close the door
+            scene.scene_data[y] = scene.scene_data[y][:x] + resource_loading.doors[door].close_icon + scene.scene_data[y][x+1:]
+        else: 
+            # We need to open the door
+            scene.scene_data[y] = scene.scene_data[y][:x] + resource_loading.doors[door].open_icon + scene.scene_data[y][x+1:]
 
     ###############
     #   Updates   #

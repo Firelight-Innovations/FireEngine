@@ -1,5 +1,6 @@
 import arcade
 import os
+from FireEngine.core.resources import data_containers
 
 Assets = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Assets")
 Objects = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Objects")
@@ -8,10 +9,11 @@ Cache = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dir
 
 EncodingType = None
 
-DefaultTexture = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "FireEngine\\Default\\default.png")
+DefaultTexture = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "FireEngine\\default\\default.png")
 
 scenes = {}
 textures = {}
+doors = {}
 objects = {}
 # 3d_objects = {}
 

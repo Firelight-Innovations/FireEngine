@@ -143,6 +143,7 @@ class player():
     def check_collision(self, x: float, y: float):
         """Check if the player's bounding box collides with any walls."""
         from FireEngine.core import scene
+        from FireEngine.core.resources import resource_loading
 
         # Define a small collision buffer around the player
         buffer = 0.15  # Adjust this value as needed
@@ -165,6 +166,14 @@ class player():
                 return True  # Treat out-of-bounds as a collision
 
             # Check if any corner is inside a wall ('█')
+            tile_data = scene.scene_data[map_y][map_x]
+
+            # Is open door?
+            for door in resource_loading.doors:
+                if tile_data == resource_loading.doors[door].open_icon:
+                    return False
+                
+                        # Is empty space?
             if scene.scene_data[map_y][map_x] != ' ':
                 return True  # Collision detected
 
@@ -224,6 +233,7 @@ class player():
         from FireEngine.objects import entity
         from FireEngine.core import scene
         from FireEngine.core import render
+        from FireEngine.core.resources import resource_loading
         import math
         
         # Play a gun sound when shooting
@@ -285,10 +295,16 @@ class player():
                 map_y += step_y
                 side = 1  # Hit was on a y-side (horizontal wall)
 
+            tile = scene.scene_data[map_y][map_x]
+
             # Check if we've hit a wall ('█' or '▓')
-            if scene.scene_data[map_y][map_x] != ' ':
+            if tile != ' ':
                 hit_wall = True
-                break
+
+            for door in resource_loading.doors:
+                if not resource_loading.doors[door].render_open_door:
+                    if tile == resource_loading.doors[door].open_icon:
+                        hit_wall = False
 
             # Check for entity collision at this grid cell  during traversal
             for ent in entity.entities:

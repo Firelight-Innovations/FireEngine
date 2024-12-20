@@ -1,11 +1,11 @@
 [Info]
 type=texture
-name=bricks
+name=brick
 
 [Texture Info]
 location=Textures\Surfaces\wolf_bricks.png
 icon=#
 
 [Audio Info]
-hit_sfx=Audio\\
-walk_sfx=Audio\\
+hit_sfx=Audio\
+walk_sfx=Audio\

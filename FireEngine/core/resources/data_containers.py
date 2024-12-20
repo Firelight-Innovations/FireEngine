@@ -28,9 +28,9 @@ class texture:
         self.name = name
 
         try:
-            self.texture = os.path.join(resource_loading.Assets, location) #arcade.load_texture(os.path.join(resource_loading.Assets, location))
+            self.texture_path = os.path.join(resource_loading.Assets, location)
         except:
-            self.texture = resource_loading.DefaultTexture #arcade.load_texture(resource_loading.DefaultTexture)
+            self.texture_path = resource_loading.DefaultTexture
 
         self.icon = icon
 
@@ -55,36 +55,35 @@ class door:
                  close_location = '',
                  open_location = '', 
                  wall_location = '',
-                 open_icon = '', 
-                 close_icon = '',
-                 hit_sfx = object,
-                 walk_sfx = object):
+                 close_icon = '', 
+                 open_icon = '',
+                 render_open = False,
+                 hit_sfx = object):
         from FireEngine.core.resources import resource_loading
         import os
-        import arcade
     
         self.name = name
 
         # Try to load textures
         try:
-            self.close_texture = arcade.load_texture(os.path.join(resource_loading.Assets, close_location))
+            self.close_texture = os.path.join(resource_loading.Assets, close_location)
         except:
-             self.close_texture_texture = arcade.load_texture(resource_loading.DefaultTexture)
+             self.close_texture = resource_loading.DefaultTexture
         
         try:
-            self.open_texture = arcade.load_texture(os.path.join(resource_loading.Assets, open_location))
+            self.open_texture = os.path.join(resource_loading.Assets, open_location)
         except:
-             self.open_texture = arcade.load_texture(resource_loading.DefaultTexture)
+             self.open_texture = resource_loading.DefaultTexture
 
         try:
-            self.wall_texture = arcade.load_texture(os.path.join(resource_loading.Assets, wall_location)) 
+            self.wall_texture = os.path.join(resource_loading.Assets, wall_location)
         except:
-             self.wall_texture_texture = arcade.load_texture(resource_loading.DefaultTexture)
+             self.wall_texture = resource_loading.DefaultTexture
 
-        self.open_icon = open_icon
         self.close_icon = close_icon
+        self.open_icon = open_icon
+        self.render_open_door = render_open
         self.hit_sfx = hit_sfx
-        self.walk_sfx = walk_sfx
         pass
 
 # scene object data container

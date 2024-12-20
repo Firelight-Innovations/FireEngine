@@ -15,23 +15,20 @@ MAX_DEPTH = 30
 @register
 class render():
     def __init__(self):
-        from FireEngine.core.resources import resource_loading
         from FireEngine.player import player
+        import arcade
 
         self.screen_width = SCREEN_WIDTH
         self.screen_height = SCREEN_HEIGHT
 
         # Initialize ZBuffer as a list with length equal to screen width
         self.z_buffer = [float('inf')] * self.screen_width
+        # self.draw_list = arcade.SpriteList() # used for batching
 
         self.player = player.Player
+        self.inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
+        self.epsilon = 1e-6
 
-        # Texture loading
-        # self.wall_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_bricks.png")
-        self.door_closed_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\Door.png")
-        self.door_open_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\Open_Door.png")
-        self.floor_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_cobble_floor.png")
-        self.ceiling_texture = os.path.join(resource_loading.Assets, "Textures\\Surfaces\\wolf_cobble_floor.png")
 
     def draw_entities(self):
         from FireEngine.objects import entity
@@ -131,12 +128,17 @@ class render():
             except:
                 continue
 
+    def draw_sprirtes(self):
+        pass
+
+    def draw_3d_objects(self):
+        pass
+
     def draw_walls(self):
         """Cast rays from the player's position and render walls with correct depth."""
         from FireEngine.core import scene
         from FireEngine.player import player
         from FireEngine.core.resources import resource_loading
-        import chardet
         import arcade
 
         # Starting angle for the first ray (leftmost ray in player's FOV)
@@ -185,22 +187,24 @@ class render():
                     map_y += step_y
                     side = 1  # Hit was on a y-side (horizontal wall)
 
-                if scene.scene_data[map_y][map_x] != ' ':
+                tile = scene.scene_data[map_y][map_x]
+                        
+                if tile != ' ':
                     hit = True
 
+                for door in resource_loading.doors:
+                    if not resource_loading.doors[door].render_open_door:
+                        if tile == resource_loading.doors[door].open_icon:
+                            hit = False
+
             # Calculate distance from player to wall using perpendicular distance correction
-            epsilon = 0.0001
-
-            epsilon = 1e-6
-            inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
-
-            if abs(inv_det) < epsilon:
+            if abs(self.inv_det) < self.epsilon:
                 continue
 
             if side == 0:
-                perp_wall_dist = max((map_x - player.Player.player_x + (1 - step_x) / 2) / (ray_dir_x + epsilon), epsilon)
+                perp_wall_dist = max((map_x - player.Player.player_x + (1 - step_x) / 2) / (ray_dir_x + self.epsilon), self.epsilon)
             else:
-                perp_wall_dist = max((map_y - player.Player.player_y + (1 - step_y) / 2) / (ray_dir_y + epsilon), epsilon)
+                perp_wall_dist = max((map_y - player.Player.player_y + (1 - step_y) / 2) / (ray_dir_y + self.epsilon), self.epsilon)
 
             perp_wall_dist *= math.cos(ray_angle - player.Player.player_angle)
 
@@ -220,50 +224,72 @@ class render():
                 wall_x = player.Player.player_x + (map_y - player.Player.player_y + (1 - step_y) / 2) / ray_dir_y * ray_dir_x 
 
             wall_x %= 1
-
-            texture_path = ''
+                
+            texture = ''
 
             # determine texture to render
             icon = scene.scene_data[map_y][map_x]
 
             for key in resource_loading.textures:
                 if key == icon:
-                    texture_path = resource_loading.textures[key].texture
+                    texture = resource_loading.textures[key].texture_path
+                    break
 
-            if icon == 'D':
-                texture_path = self.door_closed_texture
-            elif icon == 'd':
-                texture_path = self.door_open_texture
-                
+            # determine which door texture to render
+            if texture == '':
+                for Door in resource_loading.doors:
+                    if icon == resource_loading.doors[Door].close_icon:
+                        texture = resource_loading.doors[Door].close_texture
+                        door = Door
+                        break
+                    elif icon == resource_loading.doors[Door].open_icon:
+                        texture = resource_loading.doors[Door].open_texture
+                        door = Door
+                        break
+
+            if texture == '':
+                texture = resource_loading.DefaultTexture
+
             # Determine which part of texture to sample using wall hit position (wall_x)
-            texture_width = arcade.load_texture(texture_path).width
+            loaded_texture = arcade.load_texture(texture)
 
             # Calculate which column of pixels corresponds to this part of the wall
-            texture_column = int(wall_x * texture_width)
+            texture_column = int(wall_x * loaded_texture.width)
 
             # Ensure we don't exceed the bounds of the texture width
-            if texture_column >= texture_width:
-                texture_column = texture_width - 1
+            if texture_column >= loaded_texture.width:
+                texture_column = loaded_texture.width - 1
 
-            # Load only a vertical slice of the texture using arcade.load_texture()
-            texture_slice_arcade = arcade.load_texture(
-                file_name=texture_path,
-                x=texture_column,   # Start at this column in the texture
-                y=0,                # Start at the top of the texture
-                width=1,            # Only load one column width (slice)
-                height=arcade.load_texture(texture_path).height   # Full height of the texture
-            )
-
-            arcade.draw_texture_rectangle(
-                center_x=ray_screen_position,
-                center_y=(draw_start + draw_end) // 2,
-                width=self.screen_width / (NUM_RAYS / 1.05),   # Each slice corresponds to one column wide slice.
+            '''
+            arcade.draw_lrwh_rectangle_textured(
+                bottom_left_x=ray_screen_position - (self.screen_width / NUM_RAYS) / 2,
+                bottom_left_y=(draw_start + draw_end) // 2 - line_height / 2,
+                width=self.screen_width / NUM_RAYS,
                 height=line_height,
-                texture=texture_slice_arcade,
-                angle=0,
-                alpha=255
+                texture=loaded_texture
+            )
+            '''
+            
+            # Load only a vertical slice of the texture using arcade.load_texture()
+            texture_slice = arcade.load_texture(
+                file_name = texture, 
+                x = texture_column, 
+                y = 0, 
+                width = 1, 
+                height = loaded_texture.height # Full height of the texture
             )
 
+            # Render the cropped texture slice
+            arcade.draw_texture_rectangle(
+                center_x = ray_screen_position,
+                center_y = (draw_start + draw_end) // 2,
+                width = self.screen_width / (NUM_RAYS / 1.05),  # Adjust width for scaling
+                height = line_height,
+                texture = texture_slice,
+                angle = 0,
+                alpha = 255
+            )
+            
             ray_angle += FOV / NUM_RAYS
     
     def draw_floor(self):
@@ -362,8 +388,10 @@ class render():
             height=self.screen_height // 2,
             color=(71, 71, 71, 255)
         )
-
+        
         self.draw_walls()
         self.draw_entities()
+        self.draw_sprirtes()
+        self.draw_3d_objects()
 
 Render = render()

@@ -314,6 +314,7 @@ class entity:
     def can_see(self, target_x, target_y):
         """Check if this sprite can see a given tile."""
         from FireEngine.core import scene
+        from FireEngine.core.resources import resource_loading
         import math
 
         ray_x, ray_y = self.x, self.y
@@ -349,9 +350,13 @@ class entity:
             if int(ray_x) == int(target_x) and int(ray_y) == int(target_y):
                 return True
 
+            tile = scene.scene_data[map_y][map_x]
+
             # Check for walls blocking the view
-            if scene.scene_data[map_y][map_x] != ' ':
-                return False
+            if tile != ' ':
+                for door in resource_loading.doors:
+                    if tile != resource_loading.doors[door].open_icon:
+                        return False
 
         return False  # Target is out of maximum range or blocked by walls
 

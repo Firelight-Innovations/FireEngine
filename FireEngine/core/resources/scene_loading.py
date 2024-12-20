@@ -77,10 +77,11 @@ class scene_loader:
                 # Read the .dat file
                 data_file = configparser.ConfigParser()
                 data_file.read(os.path.join(texture_path, file))
-                texture_icon = data_file['Texture Info']['icon']
 
                 if data_file['Info']['type'] != 'texture':
                     continue
+
+                texture_icon = data_file['Texture Info']['icon']
 
                 # Load from .dat into memory 
                 resource_loading.textures[texture_icon] = data_containers.texture(
@@ -91,7 +92,42 @@ class scene_loader:
                     walk_sfx= data_file['Audio Info']['walk_sfx']
                 )
 
-                print(f'Path 0: {resource_loading.textures[texture_icon].texture}')
+    def load_door_data(self):
+        """Loads all doors into a list"""
+        from FireEngine.core.resources import resource_loading
+        from FireEngine.core.resources import data_containers
+
+        texture_path = os.path.join(resource_loading.Objects, "Doors")
+
+        for file in os.listdir(texture_path):
+            if file.endswith('.dat'):  # Check if the file is a .dat file
+                # Read the .dat file       
+                data_file = configparser.ConfigParser()
+                data_file.read(os.path.join(texture_path, file))
+
+                if data_file['Info']['type'] != 'door':
+                    continue
+
+                name = data_file['Info']['name']
+
+                str_to_bool = {
+                    'True': True,
+                    'true': True,
+                    'False': False,
+                    'false': False
+                }
+
+                # Load from .dat into memory 
+                resource_loading.doors[name] = data_containers.door(
+                    name = name,
+                    close_location = data_file['Texture Info']['close_location'],
+                    open_location = data_file['Texture Info']['open_location'],
+                    wall_location= data_file['Texture Info']['wall_location'],
+                    close_icon = data_file['Texture Info']['close_icon'],
+                    open_icon = data_file['Texture Info']['open_icon'],
+                    render_open = str_to_bool[data_file['Texture Info']['render_open_door']],
+                    hit_sfx = data_file['Audio Info']['hit_sfx'],
+                )
 
     def load_scene(self, scene_name:str):
         """Loads a scene from it's name"""
@@ -117,6 +153,7 @@ class scene_loader:
         #   Loads texture data   #
         ##########################
         self.load_texture_data()
+        self.load_door_data()
 
         #########################
         #   Loads entity data   #

@@ -28,6 +28,7 @@ from FireEngine.objects import entity
 from FireEngine.objects import sprite
 from FireEngine.player import player
 from FireEngine.player import interact
+# from FireEngine.audio import audio
 from FireEngine.ui import debug
 from FireEngine.ui import game_ui
 
@@ -40,7 +41,7 @@ SCREEN_TITLE = "Minenstien"
 
 class GameLoop(arcade.Window):
     def __init__(self):
-        super().__init__(render.SCREEN_WIDTH, render.SCREEN_HEIGHT, SCREEN_TITLE, resizable=True, vsync=True) # type: ignore
+        super().__init__(render.SCREEN_WIDTH, render.SCREEN_HEIGHT, SCREEN_TITLE, resizable=True, vsync=True, update_rate=1/60) # type: ignore
 
         # clears game cache
         resource_loading.delete_all_files_in_directory(resource_loading.Cache)
@@ -54,6 +55,7 @@ class GameLoop(arcade.Window):
     def on_draw(self):
         """Render the screen."""
         arcade.start_render()
+        # Clear the texture cache
         manager.Game.render()
 
     def on_key_press(self, key, modifiers):
