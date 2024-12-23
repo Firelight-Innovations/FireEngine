@@ -14,7 +14,7 @@ DefaultTexture = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os
 scenes = {}
 textures = {}
 doors = {}
-objects = {}
+entities = {}
 # 3d_objects = {}
 
 # Resource loading

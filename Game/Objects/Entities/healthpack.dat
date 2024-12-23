@@ -1,0 +1,23 @@
+[Info]
+type=entity
+name=healthpack
+
+[Entity Info]
+#types: enemy, dropable, (custom types)
+type=dropable
+icon=h
+hitbox_x=0.3
+hitbox_y=0.3
+
+[Dropable Info]
+asset_location=?
+health=25
+armor=0
+pistol_ammo=0
+shotgun_ammo=0
+rifle_ammo=0
+#types: light_burst, (custom types)
+equip_vfx=light_burst 
+
+[Dropable Audio Info]
+equip_sfx=?

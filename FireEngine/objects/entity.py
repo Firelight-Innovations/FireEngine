@@ -8,7 +8,7 @@ entity_count = 0
 @register
 class entity:
     import math
-    def __init__(self, x, y, rotation, hitbox_x, hitbox_y, sprite_sheet_path, health=math.inf):
+    def __init__(self, x, y, rotation, _entity):
         from FireEngine.core.resources import resource_loading
         import arcade
         import random
@@ -16,14 +16,16 @@ class entity:
 
         entities.append(self)
 
+        self._entity = _entity
+
         self.x = float(x + 0.5)
         self.y = float(y + 0.5)
         self.rotation = rotation
         self.animation_rotation = 0
-        self.hitbox_x = float(hitbox_x)
-        self.hitbox_y = float(hitbox_y)
-        self.health = health
-        self.sprite_sheet_path = sprite_sheet_path
+        self.hitbox_x = float(_entity.hitbox_x)
+        self.hitbox_y = float(_entity.hitbox_y)
+        self.health = _entity.health
+        self.sprite_sheet_path = _entity.animation_sheet
         
         self.walk_ani_0, self.walk_ani_0_path, self.walk_ani_45, self.walk_ani_45_path, self.walk_ani_90, self.walk_ani_90_path, self.walk_ani_135, self.walk_ani_135_path, self.walk_ani_180, self.walk_ani_180_path, self.walk_ani_225, self.walk_ani_225_path, self.walk_ani_270, self.walk_ani_270_path, self.walk_ani_315, self.walk_ani_315_path, self.shoot_ani, self.shoot_ani_path, self.death_ani, self.death_ani_path = self.load_animations(self.sprite_sheet_path)
 
@@ -35,11 +37,11 @@ class entity:
         self.death_frame_duration = 0.2  # Time (in seconds) per frame
 
         self.patrol_timer = random.uniform(1, 3)  # Time to move from current spot to the other
-        self.patrol_wait = random.uniform(1, 3) # Time to wait between movements
+        self.patrol_wait = _entity.patrol_wait # Time to wait between movements
         self.target_x = None
         self.target_y = None
 
-        self.max_detect_distance = 4.5
+        self.max_detect_distance = _entity.fire_range
 
         # Walking animation
         self.is_walking = False
@@ -52,23 +54,23 @@ class entity:
         self.current_shoot_frame = 0
         self.shoot_timer = 0
         self.fire_frame_duration = 0.1
-        self.no_fire_frame_duration = random.uniform(1, 8) / 10
+        self.no_fire_frame_duration = random.uniform(self._entity.fire_freq_low, self._entity.fire_freq_high)
 
         # Audio
-        self.gun_shot = arcade.load_sound(os.path.join(resource_loading.Assets, "Audio\\Enemies\\Gun\\Pistol Single Shot.wav"))
+        self.gun_shot = arcade.load_sound(os.path.join(resource_loading.Assets, _entity.pistol_sfx))
 
         # Textures
         self.texture = self.shoot_ani[1]
         self.texture_path = self.shoot_ani_path[1]
 
         # Load gore/scream sounds
-        self.gore_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Audio\\Enemies\\Gore"))
+        self.gore_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, _entity.gore_sfx))
 
         # Load specific death sound
-        self.scream_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Audio\\Enemies\\Scream"))
+        self.scream_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, _entity.scream_sfx))
 
         # Load specific death sound
-        self.death_sound = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Audio\\Enemies\\Death"))
+        self.death_sound = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, _entity.death_sfx))
 
     def load_animations(self, path):
         '''Loads all animations and textures from a sprite sheet'''
@@ -293,7 +295,7 @@ class entity:
     
         # Move towards target position if set
         if self.target_x is not None and self.target_y is not None:
-            speed = 1 * delta_time  # Adjust speed as needed
+            speed = self._entity.speed * delta_time
             dx = self.target_x - self.x
             dy = self.target_y - self.y
             # Update rotation for sprite
@@ -387,9 +389,11 @@ class entity:
                     arcade.play_sound(self.gun_shot, 0.7) # type: ignore
 
                     if random.uniform(0, 100) <= ((distance) / self.max_detect_distance) * 100:
-                        upper_dam = 30 / (distance / self.max_detect_distance)
-                        lower_dam = 10 / (distance / self.max_detect_distance)
-                        player.hurt_player(random.uniform(lower_dam, upper_dam))
+                        damage = self._entity.damage_low + (self._entity.damage_high - self._entity.damage_low) * distance
+                        chance = self._entity.hit_chance_far + (self._entity.hit_chance_close - self._entity.hit_chance_far) * distance
+                        
+                        if random.uniform(0.0, 1.0) <= chance:
+                            player.hurt_player(random.uniform(0.8, 1) * damage)
 
                     self.shoot_timer = 0
                     self.current_shoot_frame = 1

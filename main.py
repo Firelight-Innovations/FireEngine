@@ -18,9 +18,8 @@ from FireEngine.core import manager
 # Resouurce loading 
 from FireEngine.core.resources import resource_loading
 from FireEngine.core.resources import scene_loading
-from FireEngine.core.resources import entity_loading
-from FireEngine.core.resources import sprite_loading
-from FireEngine.core.resources import weapon_loading
+from FireEngine.core.resources import data_containers
+
 # Gameplay logic
 
 from FireEngine.core import render
@@ -85,7 +84,7 @@ class GameLoop(arcade.Window):
             manager.Game.move_down(False)
         elif key == arcade.key.A:
             manager.Game.move_left(False)
-        elif key == arcade.key.D:
+        elif key == arcade.key.D: 
             manager.Game.move_right(False)
         elif key == arcade.key.LEFT:  # Stop turning left
             manager.Game.turn_left(False)

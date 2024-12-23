@@ -29,7 +29,6 @@ class render():
         self.inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
         self.epsilon = 1e-6
 
-
     def draw_entities(self):
         from FireEngine.objects import entity
         from FireEngine.player import player
@@ -78,7 +77,6 @@ class render():
                 draw_start_x = int(entity_screen_x - (entity_width / 2))
                 draw_end_x = int(entity_screen_x + (entity_width / 2))
 
-                # sprite.death_animation[sprite.current_death_frame]
                 texture = enti.texture
                 texture_width = texture.width
                 texture_height = texture.height
