@@ -8,32 +8,6 @@ import arcade.color
 import arcade.key
 import os
 
-#############################
-#   Importing engine code   #
-#############################
-
-# Importing game manager
-from FireEngine.core import manager
-
-# Resouurce loading 
-from FireEngine.core.resources import resource_loading
-from FireEngine.core.resources import scene_loading
-from FireEngine.core.resources import data_containers
-
-# Gameplay logic
-
-from FireEngine.core import render
-from FireEngine.objects import entity
-from FireEngine.objects import sprite
-from FireEngine.player import player
-from FireEngine.player import interact
-# from FireEngine.audio import audio
-from FireEngine.ui import debug
-from FireEngine.ui import game_ui
-
-# Import all files dynamically from the game
-
-# Import all files dynamically from mods
 
 # Constants
 SCREEN_TITLE = "Minenstien"
@@ -91,11 +65,46 @@ class GameLoop(arcade.Window):
         elif key == arcade.key.RIGHT:  # Stop turning right
             manager.Game.turn_right(False)
 
+#############################
+#   Importing engine code   #
+#############################
+
+# Importing game manager
+from FireEngine.core import manager
+
+# Resouurce loading 
+from FireEngine.core.resources import resource_loading
+from FireEngine.core.resources import scene_loading
+from FireEngine.core.resources import data_containers
+
+# Gameplay logic
 # Main function to start the Game
+
 def main():
     """Main function to set up and run the Game."""
     game = GameLoop()
     arcade.run()
 
+# Importing & initializing code in a particular order to get multithreading to work.
 if __name__ == "__main__":
+    from FireEngine.core import multiprocess
+
+    # Initialize the Manager
+    #man = multiprocess.createManager()
+
+    #print(f'Multi: {man}')
+    from FireEngine.core import render
+    from FireEngine.objects import entity
+    from FireEngine.objects import sprite
+    from FireEngine.player import player
+    from FireEngine.player import interact
+
+    # from FireEngine.audio import audio
+    from FireEngine.ui import debug
+    from FireEngine.ui import game_ui
+
+    # Import all files dynamically from the game
+
+    # Import all files dynamically from mods
+
     main()

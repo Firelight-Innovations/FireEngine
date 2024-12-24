@@ -15,6 +15,7 @@ scenes = {}
 textures = {}
 doors = {}
 entities = {}
+sprites = {}
 # 3d_objects = {}
 
 # Resource loading

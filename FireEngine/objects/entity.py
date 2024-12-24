@@ -7,7 +7,6 @@ entity_count = 0
 
 @register
 class entity:
-    import math
     def __init__(self, x, y, rotation, _entity):
         from FireEngine.core.resources import resource_loading
         import arcade
@@ -464,6 +463,7 @@ class entity:
 
         self.patrol(delta_time, player.Player.player_x, player.Player.player_y)
 
-        # Check if the enemy should shoot at the player
         self.update_texture(player_x=player.Player.player_x, player_y=player.Player.player_y)
+
+        # Check if the enemy should shoot at the player
         self.shoot_at_player(delta_time, player.Player)

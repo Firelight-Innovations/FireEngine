@@ -32,13 +32,13 @@ class debug():
     def draw_stats(self):
         """Draw FPS counter and general game stats in the top-right corner."""
         import main
-        from FireEngine.objects import entity
+        from FireEngine.objects import sprite
         from FireEngine.core import render
         from FireEngine.player import player
         
         # Display FPS in top-right corner
         arcade.draw_text(
-            f"FPS: {self.fps:.1f} \nPlayer X: {player.Player.player_x:.1f} \nPlayer Y: {player.Player.player_y:.1f} \nPlayer Rot: {(player.Player.player_angle * (180 / math.pi)):.1f}º \nSprites on Screen: {(entity.entity_count)}", 
+            f"FPS: {self.fps:.1f} \nPlayer X: {player.Player.player_x:.1f} \nPlayer Y: {player.Player.player_y:.1f} \nPlayer Rot: {(player.Player.player_angle * (180 / math.pi)):.1f}º \nSprites on Screen: {(sprite.sprite_count)}", 
             10, 
             render.SCREEN_HEIGHT - 20, 
             arcade.color.BLACK

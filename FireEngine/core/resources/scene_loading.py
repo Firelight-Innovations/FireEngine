@@ -211,11 +211,49 @@ class scene_loader:
                     data = data
                 )
 
+    def load_sprite_data(self):
+        """Loads all sprites into a list"""
+        from FireEngine.core.resources import resource_loading
+        from FireEngine.core.resources import data_containers
+
+        texture_path = os.path.join(resource_loading.Objects, "Sprites")
+
+        for file in os.listdir(texture_path):
+            if file.endswith('.dat'):  # Check if the file is a .dat file
+                # Read the .dat file       
+                data_file = configparser.ConfigParser()
+                data_file.read(os.path.join(texture_path, file))
+
+                if data_file['Info']['type'] != 'sprite':
+                    continue
+
+                name = data_file['Info']['name']
+                icon = data_file['Sprite Info']['icon']
+                data = {}
+
+                data = {
+                    # Sprite Info
+                    'hitbox_x': data_file['Sprite Info']['hitbox_x'],
+                    'hitbox_y': data_file['Sprite Info']['hitbox_y'],
+                    'animation_sheet': data_file['Sprite Info']['animation_sheet'],
+        
+                    # Audio Info
+                    'hit_sfx': data_file['Audio Info']['hit_sfx'],
+                }  
+
+                # Load from .dat into memory 
+                resource_loading.sprites[name] = data_containers.sprite(
+                    name = name,
+                    icon = icon,
+                    data = data
+                )
+
     def load_scene(self, scene_name:str):
         """Loads a scene from it's name"""
         from FireEngine.core.resources import resource_loading
         from FireEngine.core import scene
         from FireEngine.objects import entity
+        from FireEngine.objects import sprite
         from FireEngine.player import player
 
         ########################
@@ -248,9 +286,20 @@ class scene_loader:
                 for x in range(len(scene.scene_data[0])):
                     if scene.scene_data[y][x] == resource_loading.entities[enti].icon:
                         scene.scene_data[y] = scene.scene_data[y][:x] + ' ' + scene.scene_data[y][x+1:]
-                        entity.entity(x, y, 0, _entity=resource_loading.entities[enti]) # Instantiates a new sprite object, inherits from the sprite class
+                        entity.entity(x, y, 0, _entity=resource_loading.entities[enti]) # Instantiates a new entity object, inherits from the entity class
 
-        # Loads sprite data
+        #########################
+        #   Loads sprite data   #
+        #########################
+        self.load_sprite_data()
+
+        # Instanitates sprites into memory
+        for spri in resource_loading.sprites:
+            for y in range(len(scene.scene_data)):
+                for x in range(len(scene.scene_data[0])):
+                    if scene.scene_data[y][x] == resource_loading.sprites[spri].icon:
+                        scene.scene_data[y] = scene.scene_data[y][:x] + ' ' + scene.scene_data[y][x+1:]
+                        sprite.sprite(x, y, 0, _sprite=resource_loading.sprites[spri]) # Instantiates a new sprite object, inherits from the sprite class
 
     def detect_encoding(self, file_path):
         from FireEngine.core.resources import resource_loading

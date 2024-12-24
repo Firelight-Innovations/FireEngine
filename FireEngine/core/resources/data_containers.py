@@ -85,7 +85,7 @@ class door:
         self.hit_sfx = hit_sfx
 
 class entity:
-    """Door data container"""
+    """Entity data container"""
     def __init__(self, 
                  name='', 
                  _type='',
@@ -145,6 +145,28 @@ class entity:
             # Dropable Audio Info
             self.equip_sfx = data['equip_sfx']
             
+class sprite:
+    """Sprite data container"""
+    def __init__(self, 
+                 name='', 
+                 icon='',
+                 data={}):
+        from FireEngine.core.resources import resource_loading
+        import os
+    
+        # Info
+        self.name = name
+
+        # Entity Info
+        self.icon = icon
+
+        self.hitbox_x = float(data['hitbox_x'])
+        self.hitbox_y = float(data['hitbox_y'])
+
+        self.animation_sheet = os.path.join(resource_loading.Assets, data['animation_sheet'])
+
+        # Enemy Audio Info
+        self.hit_sfx = os.path.join(resource_loading.Assets, data['hit_sfx'])
 
 # scene object data container
 class objects:
