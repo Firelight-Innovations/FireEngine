@@ -1,51 +1,37 @@
-# Type defines if the object is a texture, sprite, weapon, etc
+[Info]
 type=weapon
+name=pistol
 
-# Name must be unique
-name=Pistol
+[Weapon Info]
+fire_animation=Assets/Textures/Guns/Pistol/fire.png
+reload_animation=
+jam_animation=
 
-############################
-# Type specific attributes #
-############################
+# Size of each object on sprite sheet (x,y)
+texture_size=32,32
+texture_buffer=1
 
-# The maxium damage
 damage_high=30
-
-# The minium damage
 damage_low=10
-
 range=10
 
 max_ammo=17
 start_ammo=17
 
-# (True/False)
-is_full_auto=False
+is_start_weapon=True
+is_automatic=False
+loose_on_death=False
+uses_ammo=True
+does_reload=False
+does_jam=False
 
-# Drops the weapon when the player dies (True/False)
-loose_weapon_on_death=False
+ammo_type=Pistol
 
-# Stealth
-loudness=0.6
-
-# How long the reload animation plays for
 reload_time=1
-
-# How long it takes to play the fire animation
 fire_time=0.2
 
-# Locations of each sprite sheet
-fire_animation=Assets/Textures/Guns/Pistol/fire.png
-reload_animation=Assets/Textures/Guns/Pistol/reload.png
-jam_animation=Assets/Textures/Guns/Pistol/jam.png
-
-# Size of each sprite in pixels (x,y)
-texture_size=32,32
-
-# Space between sprite sheet in pixels
-texture_buffer=1
-
-# Locations for each sound effect
-shot_sfx=Assets/Sounds/Player/Guns/Pistol/pistol_fire.wav
-reload_sfx=Assets/Sounds/Player/Guns/Pistol/pistol_reload.wav
-jam_sfx=Assets/Sounds/Player/Guns/Pistol/pistol_jam.wav
+[Audio Info]
+loudness=0.6
+fire_sfx=Assets/Sounds/Player/Guns/Pistol/pistol_fire.wav
+reload_sfx=
+jam_sfx=

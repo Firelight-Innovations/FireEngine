@@ -12,11 +12,14 @@ EncodingType = None
 DefaultTexture = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "FireEngine\\default\\default.png")
 
 scenes = {}
+audio = {}
 textures = {}
 doors = {}
 entities = {}
 sprites = {}
-# 3d_objects = {}
+dropables = {}
+weapons = {}
+dimentional_objects = {}
 
 # Resource loading
 def load_animation(folder_path, return_paths=False):

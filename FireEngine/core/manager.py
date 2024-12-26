@@ -100,4 +100,8 @@ class game_manager:
         """Calls 'on_interact' on all registered objects."""
         self.call_function("on_interact")
 
+    def change_weapon(self, id):
+        """Calls 'on_change_weapon' on all registered objects."""
+        self.call_function("on_change_weapon", id)
+
 Game = game_manager()

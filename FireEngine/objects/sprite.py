@@ -21,14 +21,19 @@ class sprite:
         self.animation_rotation = 0
         self.hitbox_x = float(_sprite.hitbox_x)
         self.hitbox_y = float(_sprite.hitbox_y)
+        self.transparent = _sprite.transparent
         self.sprite_sheet_path = _sprite.animation_sheet
+        self.postional = _sprite.postional
         
-        self.view_angles, self.view_angles_path = self.load_animations(self.sprite_sheet_path)
+        self.view_angles = []
+        self.view_angles_path = []
+
+        self.load_animations()
 
         # Load specific death sound
         self.hit_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, _sprite.hit_sfx))
 
-    def load_animations(self, path):
+    def load_animations(self):
         '''Loads all animations and textures from a sprite sheet'''
         from FireEngine.core.resources import resource_loading
         import arcade
@@ -39,7 +44,7 @@ class sprite:
         view_angles_path = []
 
         # Load sheet
-        sheet = arcade.load_texture(path)
+        sheet = arcade.load_texture(self.sprite_sheet_path)
         height = sheet.height
         width = sheet.width
 
@@ -50,56 +55,91 @@ class sprite:
 
         # Scans file from the very bottom to the very top
         # Loops through all rows in sprite sheet
-        for i in range(0, round(height / 65)):
-            # Loops through row
-            loop = True
-            x = 0 # x-val for sprite sheet
-            j = 0 # index of sprite for that row, used to seperarate walk cycle angles
-            while loop:
-                try:
-                    texture = arcade.load_texture(
-                        path,
-                        x=x,
-                        y=y,
-                        width=64,
-                        height=64
-                    )
-                    
-                    x += 65
+        if self.postional:
+            for i in range(0, round(height / 65)):
+                # Loops through row
+                loop = True
 
-                    # Check if all pixels are fully transparent
-                    image = texture.image
-                    loop = not all(pixel == (0, 0, 0, 0) for pixel in image.getdata())
+                x = 0 # x-val for sprite sheet
+                j = 0 # index of sprite for that row, used to seperarate walk cycle angles
 
-                    if loop:
-                        output_folder = os.path.join(resource_loading.Cache)
-                        output_file = f"{x}{y}{i}{j}-{height * random.randint(0, 10)}.png"
+                while loop:
+                    try:
+                        texture = arcade.load_texture(
+                            self.sprite_sheet_path,
+                            x=x,
+                            y=y,
+                            width=64,
+                            height=64
+                        )
 
-                        # Ensure the folder exists
-                        os.makedirs(output_folder, exist_ok=True)
+                        x += 65
 
-                        # Save the image to the specified folder
-                        output_path = os.path.join(output_folder, output_file)
-                        image.save(output_path)
+                        # Check if all pixels are fully transparent
+                        image = texture.image
+                        loop = not all(pixel == (0, 0, 0, 0) for pixel in image.getdata())
 
-                        view_angles.append(texture)
-                        view_angles_path.append(output_path)
-                except:
-                    loop = False
-                
-                j += 1
+                        if loop:
+                            output_folder = os.path.join(resource_loading.Cache)
+                            output_file = f"{x}{y}{i}{j}-{height * random.randint(0, 10)}.png"
 
-            y -= 65
+                            # Ensure the folder exists
+                            os.makedirs(output_folder, exist_ok=True)
+
+                            # Save the image to the specified folder
+                            output_path = os.path.join(output_folder, output_file)
+                            image.save(output_path)
+
+                            view_angles.append(texture)
+                            view_angles_path.append(output_path)
+                    except:
+                        loop = False
+
+                    j += 1
+
+                y -= 65
             
-        self.texture = view_angles[0]
-        self.texture_path = view_angles_path[0]
+            self.texture = view_angles[0]
+            self.texture_path = view_angles_path[0]
 
-        # Reversed lists before returning values
-        return view_angles[::-1], view_angles_path[::-1]
+            self.view_angles = view_angles[::-1]
+            self.view_angles_path = view_angles_path[::-1]
+        else:
+            # Load sheet
+            sheet = arcade.load_texture(self.sprite_sheet_path)
+            height = sheet.height
+            width = sheet.width
+
+            texture = arcade.load_texture(
+                self.sprite_sheet_path,
+                x=0,
+                y=0,
+                width=64,
+                height=64
+            )
+
+            image = texture.image
+
+            output_folder = os.path.join(resource_loading.Cache)
+            output_file = f"{height * random.randint(0, 10)}.png"
+
+            # Ensure the folder exists
+            os.makedirs(output_folder, exist_ok=True)
+
+            # Save the image to the specified folder
+            output_path = os.path.join(output_folder, output_file)
+            image.save(output_path)
+
+            self.texture = image
+            self.texture_path = output_path
     
     def update_texture(self, player_x, player_y):
         '''Updates the enemies texture based on a rotation, movement, and status.'''
         import math
+
+        # Skip if postional
+        if not self.postional:
+            return
 
         # Step 1: Calculate direction vector from enemy to player
         dx = player_x - self.x
@@ -147,6 +187,14 @@ class sprite:
             # Front-left (315°)
             self.texture = self.view_angles[0]
             self.texture_path = self.view_angles_path[0]
+
+    def hurt_sprite(self):
+        """Remove a entity when it is hit."""
+        import arcade
+        import random
+        
+        random_hit_sfx = random.choice(self.hit_sounds)
+        arcade.play_sound(random_hit_sfx, volume=1)
 
     ########################
     #   Update functions   #

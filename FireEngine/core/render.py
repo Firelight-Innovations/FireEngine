@@ -29,93 +29,98 @@ class render():
         self.inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
         self.epsilon = 1e-6
 
-    def draw_entities(self):
+    def draw_objects(self):
         from FireEngine.objects import entity
+        from FireEngine.objects import sprite
         from FireEngine.player import player
         import arcade
             
-        entity.entity_count = 0
-        # Step 1: Sort sprites by distance from the player
-        entity_distances = []
+        object_count = 0
 
-        for ent in entity.entities:
-                # Calculate distance from player to each sprite (squared distance to avoid sqrt)
-                dist = (ent.x - player.Player.player_x) ** 2 + (ent.y - player.Player.player_y) ** 2
-                entity_distances.append((ent, dist))
+        # Step 1: Sort object by distance from the player
+        object_distances = []
+        objects = []
 
-        # Sort sprites by distance (farthest to nearest)
-        entity_distances.sort(key=lambda s: s[1], reverse=True)
+        objects = entity.entities + sprite.sprites
 
-        # Step 2: Loop through each sprite and project it onto the screen
-        for enti, _ in entity_distances:
-            # Translate sprite position relative to player
-            entity_x = enti.x - player.Player.player_x
-            entity_y = enti.y - player.Player.player_y
+        for obj in objects:
+            # Calculate distance from player to each sprite (squared distance to avoid sqrt)
+            dist = (obj.x - player.Player.player_x) ** 2 + (obj.y - player.Player.player_y) ** 2
+            object_distances.append((obj, dist))
+
+        # Sort object by distance (farthest to nearest)
+        object_distances.sort(key=lambda s: s[1], reverse=True)
+
+        # Step 2: Loop through each object and project it onto the screen
+        for objs, _ in object_distances:
+            # Translate object position relative to player
+            entity_x = objs.x - player.Player.player_x
+            entity_y = objs.y - player.Player.player_y
 
             # Apply camera transformation (inverse of camera matrix)
             inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
             transform_x = inv_det * (player.Player.dir_y * entity_x - player.Player.dir_x * entity_y)
             transform_y = inv_det * (-player.Player.plane_y * entity_x + player.Player.plane_x * entity_y)
 
-            # Check if the sprite is in front of the player (transform_y > 0)
+            # Check if the object is in front of the player (transform_y > 0)
             if transform_y <= 0:
                     continue
             
-            # Step 3: Project the sprite onto the screen
+            # Step 3: Project the object onto the screen
             entity_screen_x = int((self.screen_width / 2) * (1 + transform_x / transform_y))
 
-            # Calculate height and width of the sprite on screen
+            # Calculate height and width of the object on screen
             entity_height = abs(int(self.screen_height / transform_y))  # Correct scaling based on depth
             entity_width = abs(int(self.screen_height / transform_y * (self.screen_width / self.screen_height)))
 
-            # Calculate vertical start and end positions for drawing the sprite
+            # Calculate vertical start and end positions for drawing the object
             draw_start_y = max(0, self.screen_height // 2 - entity_height // 2)
             draw_end_y = min(self.screen_height, self.screen_height // 2 + entity_height // 2)
 
-            # Calculate horizontal start and end positions for drawing the sprite
+            # Calculate horizontal start and end positions for drawing the object
             draw_start_x = int(entity_screen_x - (entity_width / 2))
             draw_end_x = int(entity_screen_x + (entity_width / 2))
 
-            texture = enti.texture
+            texture = objs.texture
             texture_width = texture.width
             texture_height = texture.height
 
-            entity.entity_count += 1
+            object_count += 1
 
-            # Step 4: Draw each vertical stripe of the sprite if it's closer than walls (using ZBuffer)
+            # Step 4: Draw each vertical stripe of the object if it's closer than walls (using ZBuffer)
             for stripe in range(draw_start_x, draw_end_x):
-                # Only render if this part of the sprite is closer than any wall at this column
-                if stripe >= 0 and stripe < self.screen_width:
-                    if transform_y > 0 and transform_y < self.z_buffer[round(stripe / (self.screen_width / NUM_RAYS)) - 1]: # Fix the minus one issues, causing one coloum to not be rendered, causing visual bugs                           
-                            # Calculate texture column (X-axis) for current vertical stripe of sprite
-                            percent_across_sprite = (stripe - draw_start_x) / float(draw_end_x - draw_start_x)
-                            texture_column = int(percent_across_sprite * texture_width)
+                # Only render if this part of the object is closer than any wall at this column
+                if stripe >= 0 and stripe < self.screen_width + (self.screen_width / NUM_RAYS):
+                    if transform_y > 0 and transform_y < self.z_buffer[round(stripe / (self.screen_width / NUM_RAYS))]: # Fix the minus one issues, causing one coloum to not be rendered, causing visual bugs                           
+                        # Calculate texture column (X-axis) for current vertical stripe of object
+                        percent_across_sprite = (stripe - draw_start_x) / float(draw_end_x - draw_start_x)
+                        texture_column = int(percent_across_sprite * texture_width)
 
-                            # Ensure we don't exceed bounds of texture width
-                            if texture_column >= texture_width:
-                                texture_column = texture_width - 1
-                            elif texture_column < 0:
-                                texture_column = 0
+                        # Ensure we don't exceed bounds of texture width
+                        if texture_column >= texture_width:
+                            texture_column = texture_width - 1
+                        elif texture_column < 0:
+                            texture_column = 0
 
-                            # Load only a vertical slice of the texture using arcade.load_texture()
-                            texture_slice_arcade = arcade.load_texture(
-                                file_name=enti.texture_path,
-                                x=texture_column,
-                                y=0,
-                                width=1,
-                                height=texture_height,
-                            )
-                            
-                            # Draw this slice of the texture on screen at this position
-                            image = arcade.Sprite(
-                                center_x=stripe * (self.screen_width / NUM_RAYS) / 4,
-                                center_y=(draw_start_y + draw_end_y) // 2,
-                                texture=texture_slice_arcade,
-                            )
+                        # Load only a vertical slice of the texture using arcade.load_texture()
+                        texture_slice = arcade.load_texture(
+                            file_name=objs.texture_path,
+                            x=texture_column,
+                            y=0,
+                            width=1,
+                            height=texture_height,
+                        )
 
-                            image.width = 1
-                            image.height = entity_height
-                            self.draw_list.append(image)
+                        # Draw this slice of the texture on screen at this position
+                        image = arcade.Sprite(
+                            center_x=stripe * (self.screen_width / NUM_RAYS) / 4,
+                            center_y=(draw_start_y + draw_end_y) // 2,
+                            texture=texture_slice,
+                        )
+                        
+                        image.width = 1
+                        image.height = entity_height
+                        self.draw_list.append(image)
 
     def draw_sprirtes(self):
         from FireEngine.objects import sprite
@@ -219,7 +224,7 @@ class render():
         ray_angle = player.Player.player_angle - FOV / 2
 
         # Cast each ray
-        for ray in range(NUM_RAYS):
+        for ray in range(NUM_RAYS + 1):
             # Calculate direction of the current ray
             ray_dir_x = math.cos(ray_angle)
             ray_dir_y = math.sin(ray_angle)
@@ -354,6 +359,8 @@ class render():
             self.draw_list.append(sprite)
 
             ray_angle += FOV / NUM_RAYS
+
+        self.z_buffer.append(0)
     
     def draw_floor(self):
         """Render textured floor using a raycasting-like approach."""
@@ -431,7 +438,7 @@ class render():
 
     def on_render(self):
         import arcade
-
+        import arcade.gl
         self.priority = 0
         self.z_buffer.clear()
 
@@ -456,11 +463,9 @@ class render():
         # Clears batch cache
         self.draw_list.clear()
         self.draw_walls()
-        self.draw_entities()
-        self.draw_sprirtes()
-        self.draw_3d_objects()
+        self.draw_objects()
 
         # Renders batched objects
-        self.draw_list.draw()
+        self.draw_list.draw(filter=arcade.gl.NEAREST)
 
 Render = render()

@@ -88,7 +88,6 @@ class entity:
     """Entity data container"""
     def __init__(self, 
                  name='', 
-                 _type='',
                  icon='',
                  data={}):
         from FireEngine.core.resources import resource_loading
@@ -98,52 +97,37 @@ class entity:
         self.name = name
 
         # Entity Info
-        self._type = _type
         self.icon = icon
 
         self.hitbox_x = float(data['hitbox_x'])
         self.hitbox_y = float(data['hitbox_y'])
 
-        if _type == 'enemy':
-            # Enemy Info
-            self.animation_sheet = os.path.join(resource_loading.Assets, data['animation_sheet'])
-            self.speed = float(data['speed'])
-            self.weapon = data['weapon']
-            self.health = float(data['health'])
-            self.armor = float(data['armor'])
-            self.damage_low = float(data['damage_low'])
-            self.damage_high = float(data['damage_high'])
-            self.fire_range = float(data['fire_range'])
-            self.hit_chance_close = float(data['hit_chance_close'])
-            self.hit_chance_far = float(data['hit_chance_far'])
-            self.fire_freq_low = float(data['fire_freq_low'])
-            self.fire_freq_high = float(data['fire_freq_high'])
+        # Enemy Info
+        self.animation_sheet = os.path.join(resource_loading.Assets, data['animation'])
+        self.speed = float(data['speed'])
+        self.weapon = data['weapon']
+        self.health = float(data['health'])
+        self.armor = float(data['armor'])
+        self.damage_low = float(data['damage_low'])
+        self.damage_high = float(data['damage_high'])
+        self.fire_range = float(data['fire_range'])
+        self.hit_chance_close = float(data['hit_chance_close'])
+        self.hit_chance_far = float(data['hit_chance_far'])
+        self.fire_freq_low = float(data['fire_freq_low'])
+        self.fire_freq_high = float(data['fire_freq_high'])
 
-            # Enemy AI Info
-            self.view_range = float(data['view_range'])
-            self.ai_system = data['ai_system']
-            self.patrol_wait = float(data['patrol_wait'])
+        # Enemy AI Info
+        self.view_range = float(data['view_range'])
+        self.ai_system = data['ai_system']
+        self.patrol_wait = float(data['patrol_wait'])
 
-            # Enemy Audio Info
-            self.death_sfx = os.path.join(resource_loading.Assets, data['death_sfx'])
-            self.gore_sfx = os.path.join(resource_loading.Assets, data['gore_sfx'])
-            self.scream_sfx = os.path.join(resource_loading.Assets, data['scream_sfx'])
-            self.pistol_sfx = os.path.join(resource_loading.Assets, data['pistol_sfx'])
-            self.shotgun_sfx = os.path.join(resource_loading.Assets, data['shotgun_sfx'])
-            self.rifle_sfx = os.path.join(resource_loading.Assets, data['rifle_sfx'])
-
-        if _type == 'dropable':
-            # Dropable Info
-            self.asset_location = data['asset_location']
-            self.health = float(data['health'])
-            self.armor = float(data['armor'])
-            self.pistol_ammo = int(data['pistol_ammo'])
-            self.shotgun_ammo = int(data['shotgun_ammo'])
-            self.rifle_ammo = int(data['rifle_ammo'])
-            self.equip_vfx = data['equip_vfx']
-
-            # Dropable Audio Info
-            self.equip_sfx = data['equip_sfx']
+        # Enemy Audio Info
+        self.death_sfx = os.path.join(resource_loading.Assets, data['death_sfx'])
+        self.gore_sfx = os.path.join(resource_loading.Assets, data['gore_sfx'])
+        self.scream_sfx = os.path.join(resource_loading.Assets, data['scream_sfx'])
+        self.pistol_sfx = os.path.join(resource_loading.Assets, data['pistol_sfx'])
+        self.shotgun_sfx = os.path.join(resource_loading.Assets, data['shotgun_sfx'])
+        self.rifle_sfx = os.path.join(resource_loading.Assets, data['rifle_sfx'])
             
 class sprite:
     """Sprite data container"""
@@ -162,13 +146,24 @@ class sprite:
 
         self.hitbox_x = float(data['hitbox_x'])
         self.hitbox_y = float(data['hitbox_y'])
+        self.transparent = bool(data['transparent'])
+        self.postional = bool(data['postional'])
 
         self.animation_sheet = os.path.join(resource_loading.Assets, data['animation_sheet'])
 
         # Enemy Audio Info
         self.hit_sfx = os.path.join(resource_loading.Assets, data['hit_sfx'])
 
-# scene object data container
-class objects:
-    def __init__(self):
+class weapon:
+    def __init__(self, 
+             name='', 
+             icon='',
+             data={}):
+        pass
+
+class dropable:
+    def __init__(self, 
+             name='', 
+             icon='',
+             data={}):
         pass

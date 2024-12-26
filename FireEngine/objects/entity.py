@@ -388,8 +388,8 @@ class entity:
                     arcade.play_sound(self.gun_shot, 0.7) # type: ignore
 
                     if random.uniform(0, 100) <= ((distance) / self.max_detect_distance) * 100:
-                        damage = self._entity.damage_low + (self._entity.damage_high - self._entity.damage_low) * distance
-                        chance = self._entity.hit_chance_far + (self._entity.hit_chance_close - self._entity.hit_chance_far) * distance
+                        damage = self._entity.damage_low + (self._entity.damage_high - self._entity.damage_low) / distance
+                        chance = self._entity.hit_chance_far + (self._entity.hit_chance_close - self._entity.hit_chance_far) / distance
                         
                         if random.uniform(0.0, 1.0) <= chance:
                             player.hurt_player(random.uniform(0.8, 1) * damage)
@@ -405,23 +405,23 @@ class entity:
         else:
             self.shoot_timer = 0
 
-    def hurt_sprite(self, sprite, damage, player):
-        """Remove a sprite when it is hit."""
+    def hurt_entity(self, entity, damage, player):
+        """Remove a entity when it is hit."""
         import arcade
         import random
         
-        sprite.health -= damage
+        entity.health -= damage
 
-        if sprite.health <= 0 and not sprite.is_dying:
+        if entity.health <= 0 and not entity.is_dying:
             # Start death animation
-            sprite.is_dying = True
-            sprite.current_death_frame = 0
-            sprite.death_timer = 0
+            entity.is_dying = True
+            entity.current_death_frame = 0
+            entity.death_timer = 0
             random_death_sound = random.choice(self.death_sound)
             arcade.play_sound(random_death_sound, volume=1)
             player.max_health += 5
             player.health += 5
-        elif sprite.health <= 0 and sprite.is_dying:
+        elif entity.health <= 0 and entity.is_dying:
             random_gore_sound = random.choice(self.gore_sounds)
             arcade.play_sound(random_gore_sound, volume=1)
         else:

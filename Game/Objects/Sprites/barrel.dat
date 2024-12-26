@@ -1,0 +1,14 @@
+[Info]
+type=sprite
+name=barrel
+
+[Sprite Info]
+icon=b
+hitbox_x=0.25
+hitbox_y=0.25
+animation_sheet=Textures\Sprites\barrel.png
+transparent=False
+postional=False
+
+[Audio Info]
+hit_sfx=Audio\Sprites\barrel

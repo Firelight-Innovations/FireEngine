@@ -24,7 +24,7 @@ class interact:
 
         tile_data = scene.scene_data[front_y][front_x]
 
-        # Check if the tile in front of the player is interactive (e.g., a door '░')
+        # Check if the tile in front of the player is interactive
         for door in resource_loading.doors:
             if tile_data == resource_loading.doors[door].open_icon or tile_data == resource_loading.doors[door].close_icon:
                 self.interact_door(front_x, front_y, door, tile_data) # Trigger callback to open door
@@ -40,6 +40,9 @@ class interact:
         else: 
             # We need to open the door
             scene.scene_data[y] = scene.scene_data[y][:x] + resource_loading.doors[door].open_icon + scene.scene_data[y][x+1:]
+
+    def interact_dropable(self):
+        pass
 
     ###############
     #   Updates   #

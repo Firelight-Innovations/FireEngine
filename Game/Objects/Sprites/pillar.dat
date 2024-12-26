@@ -1,0 +1,14 @@
+[Info]
+type=sprite
+name=pillar
+
+[Sprite Info]
+icon=p
+hitbox_x=0.25
+hitbox_y=0.25
+animation_sheet=Textures\Sprites\pillar.png
+transparent=False
+postional=False
+
+[Audio Info]
+hit_sfx=Audio\Sprites\pillar

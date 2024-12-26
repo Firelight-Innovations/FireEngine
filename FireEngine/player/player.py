@@ -1,3 +1,4 @@
+import arcade.gl
 from FireEngine.core.decorators import singleton
 from FireEngine.core.decorators import register
 
@@ -66,6 +67,20 @@ class player():
         #   GUN ATTRIBUTES   #
         ######################
 
+        self.weapon_id = 0
+        self.unlocked_weapons = [
+            True,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False
+        ]
+
         # Gun position variables
         self.gun_x = render.SCREEN_WIDTH // 2
         self.gun_y = render.SCREEN_HEIGHT // 4  # Slightly lower than center for perspective
@@ -81,6 +96,7 @@ class player():
         self.animation_timer = 0      # Timer to control frame rate
         self.animation_speed = 0.07   # Time (in seconds) between frames
         self.is_shooting = False      # Flag to indicate if the gun is animating
+        self.is_reloading = False
 
         # Gun sounds
         self.gun_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Audio\\Player\\Guns\\Pistol"))
@@ -231,6 +247,7 @@ class player():
     def shoot(self):
         """Cast a ray and check for wall or sprite collisions."""
         from FireEngine.objects import entity
+        from FireEngine.objects import sprite
         from FireEngine.core import scene
         from FireEngine.core import render
         from FireEngine.core.resources import resource_loading
@@ -256,34 +273,34 @@ class player():
         ray_dir_y = math.sin(self.player_angle)
 
         # Player's current position in grid units
-        map_x = int(ray_x)
-        map_y = int(ray_y)
+        map_x = ray_x
+        map_y = ray_y
 
         # Distance increments for each step along x and y axes
-        delta_dist_x = abs(1 / ray_dir_x) if ray_dir_x != 0 else    float('inf')
-        delta_dist_y = abs(1 / ray_dir_y) if ray_dir_y != 0 else    float('inf')
+        delta_dist_x = abs(1 / ray_dir_x) if ray_dir_x != 0 else float('inf')
+        delta_dist_y = abs(1 / ray_dir_y) if ray_dir_y != 0 else float('inf')
 
         # Calculate step direction and initial side distances
         if ray_dir_x < 0:
-            step_x = -1
+            step_x = -0.05
             side_dist_x = (ray_x - map_x) * delta_dist_x
         else:
-            step_x = 1
-            side_dist_x = (map_x + 1.0 - ray_x) * delta_dist_x
+            step_x = 0.05
+            side_dist_x = (map_x + 0.05 - ray_x) * delta_dist_x
 
         if ray_dir_y < 0:
-            step_y = -1
+            step_y = -0.05
             side_dist_y = (ray_y - map_y) * delta_dist_y
         else:
-            step_y = 1
-            side_dist_y = (map_y + 1.0 - ray_y) * delta_dist_y
+            step_y = 0.05
+            side_dist_y = (map_y + 0.05 - ray_y) * delta_dist_y
 
         # Perform DDA to find where the ray hits a wall or sprite
         hit_wall = False
-        max_distance = render.MAX_DEPTH  # Limit how far the ray can   travel
+        max_distance = render.MAX_DEPTH  # Limit how far the ray can travel
 
         while not hit_wall and max_distance > 0:
-            max_distance -= 1
+            max_distance -= 0.05
 
             # Move to the next grid square in either x or y     direction
             if side_dist_x < side_dist_y:
@@ -295,7 +312,7 @@ class player():
                 map_y += step_y
                 side = 1  # Hit was on a y-side (horizontal wall)
 
-            tile = scene.scene_data[map_y][map_x]
+            tile = scene.scene_data[int(map_y)][int(map_x)]
 
             # Check if we've hit a wall ('█' or '▓')
             if tile != ' ':
@@ -306,13 +323,22 @@ class player():
                     if tile == resource_loading.doors[door].open_icon:
                         hit_wall = False
 
-            # Check for entity collision at this grid cell  during traversal
+            # Check for entity collision at this grid cell during traversal
             for ent in entity.entities:
-                if int(ent.x) == map_x and int(ent.y) ==  map_y:
-                    if not ent.is_dying:
-                        ent.hurt_sprite(ent, 25, self)
-                        return  # Stop after hitting a sprite
+                if abs(map_x - ent.x) <= ent.hitbox_x:
+                    if abs(map_y - ent.y) <= ent.hitbox_y:
+                        if not ent.is_dying:
+                            ent.hurt_entity(ent, 25, self)
+                            return  # Stop after hitting a sprite
                         
+            # Check for sprite collision at this grid cell during traversal
+            for spt in sprite.sprites:
+                if abs(map_x - spt.x) <= spt.hitbox_x:
+                    if abs(map_y - spt.y) <= spt.hitbox_y:
+                        if not spt.transparent:
+                            spt.hurt_sprite()
+                            return 
+
         if not hit_wall:
             return
 
@@ -386,28 +412,33 @@ class player():
     def on_render(self):
         from FireEngine.core import render
         import arcade
+        import arcade.gl
 
         self.priority = 1
 
         # Draw gun texture (either static or animated)
         if self.is_shooting:
             current_frame = self.gun_animation_frames[self.current_frame_index]
-            arcade.draw_texture_rectangle(
+            texture = arcade.draw_texture_rectangle(
                 center_x=self.gun_x - 20,
                 center_y=self.gun_y,
                 width=128 * 2.5,  # Adjust based on your texture size
                 height=128 * 2.5,
                 texture=current_frame # type: ignore
             )
+
+            # texture.filter(arcade.gl.NEAREST)
         else:
             # Draw static gun texture when not shooting (optional)
-            arcade.draw_texture_rectangle(
+            texture = arcade.draw_texture_rectangle(
                 center_x=self.gun_x - 20,
                 center_y=self.gun_y,
                 width=128 * 2.5,
                 height=128 * 2.5,
                 texture=self.gun_animation_frames[0]  # Default static frame # type: ignore
             )
+
+            # texture.filter(arcade.gl.NEAREST)
 
         # Screen effects
         arcade.draw_rectangle_filled(
@@ -420,6 +451,12 @@ class player():
 
     def on_shoot(self):
         self.shoot()
+
+    def on_change_weapon(self, id):
+        from FireEngine.core.resources import resource_loading
+        if self.unlocked_weapons[id] == True:
+            self.weapon_id = id
+            # Load weapon stats from memory
 
     def on_move_up(self, state: bool):
         self.move_up = state
