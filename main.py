@@ -2,18 +2,18 @@
 # IMPORTANT: Classes are loaded & instantiated based on the order of imports in this file!
 
 # Importing depedencies 
+import os
+
 import arcade
 import arcade.color
 import arcade.color
 import arcade.key
-import os
 
 import arcade.key
 import arcade.key
-
 
 # Constants
-SCREEN_TITLE = "Minenstien"
+SCREEN_TITLE = "FireEngine Kraken"
 
 class GameLoop(arcade.Window):
     def __init__(self):
@@ -90,6 +90,17 @@ class GameLoop(arcade.Window):
         elif key == arcade.key.SPACE: # SPACE key for shooting
             manager.Game.shoot(False) 
 
+    def on_close(self):
+        """Handle window close event."""
+        import sys
+        from FireEngine.audio import audio
+        
+        # Perform audio cleanup
+        audio.audiomanager.cleanup()
+        
+        # Exit the program gracefully
+        super().on_close()
+
 #############################
 #   Importing engine code   #
 #############################
@@ -109,6 +120,15 @@ def main():
     """Main function to set up and run the Game."""
     game = GameLoop()
     arcade.run()
+
+def signal_handler(self, sig, frame):
+    """Handle termination signals."""
+    import sys
+    from FireEngine.audio import audio
+
+    print(f"Received signal {sig}, shutting down...")
+    audio.audiomanager.cleanup()
+    sys.exit(0)  # Exit gracefully after cleanup
 
 # Importing & initializing code in a particular order to get multithreading to work.
 if __name__ == "__main__":
