@@ -1,0 +1,11 @@
+[Info]
+type=texture
+name=stone brick
+
+[Texture Info]
+location=Textures\Surfaces\wolf_smoothstone.png
+icon=s
+
+[Audio Info]
+hit_sfx=Audio\
+walk_sfx=Audio\

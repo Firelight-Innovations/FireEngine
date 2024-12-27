@@ -1,0 +1,14 @@
+[Info]
+type=door
+name=door
+
+[Texture Info]
+close_location=Textures\Surfaces\door.png
+open_location=Textures\Surfaces\open_door.png
+wall_location=Textures\Surfaces\door.png
+close_icon=D
+open_icon=d
+render_open_door=False
+
+[Audio Info]
+hit_sfx=Audio\

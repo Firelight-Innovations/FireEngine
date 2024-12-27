@@ -1,0 +1,19 @@
+[Info]
+type=sprite
+name=light
+
+[Sprite Info]
+icon=l
+hitbox_x=0.25
+hitbox_y=0.25
+animation_sheet=Textures\Sprites\light.png
+
+# Size of each object on sprite sheet (x,y)
+texture_size=64,64
+texture_buffer=1
+
+transparent=True
+postional=False
+
+[Audio Info]
+hit_sfx=Audio\Sprites\light

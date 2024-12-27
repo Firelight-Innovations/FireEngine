@@ -1,0 +1,46 @@
+[Info]
+type=weapon
+name=pistol
+
+[Weapon Info]
+fire_animation=Textures\Weapons\Pistol\fire.png
+reload_animation=
+jam_animation=
+
+# Size of each object on sprite sheet (x,y)
+texture_size=128,128
+texture_buffer=1
+
+# Screen position
+# ex: screen_width // weapon_x 
+weapon_x=2.1
+weapon_y=4
+weapon_scale=2.5
+
+damage_high=30
+damage_low=10
+range=10
+
+max_ammo=17
+start_ammo=68
+
+unlock_on_start=True
+is_automatic=False
+loose_on_death=False
+uses_ammo=True
+does_reload=False
+does_jam=False
+
+ammo_type=Pistol
+
+# From 0-9
+weapon_id=5
+
+reload_time=1
+fire_time=0.3
+
+[Audio Info]
+loudness=0.6
+fire_sfx=Audio\Weapons\Pistol\pistol_fire.wav
+reload_sfx=
+jam_sfx=

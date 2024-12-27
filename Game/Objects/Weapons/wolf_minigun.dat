@@ -1,0 +1,46 @@
+[Info]
+type=weapon
+name=wolf minigun
+
+[Weapon Info]
+fire_animation=Textures\Weapons\Wolf MINI\fire.png
+reload_animation=
+jam_animation=
+
+# Size of each object on sprite sheet (x,y)
+texture_size=64,64
+texture_buffer=1
+
+# Screen position
+# ex: screen_width // weapon_x 
+weapon_x=2
+weapon_y=2.2
+weapon_scale=10
+
+damage_high=15
+damage_low=5
+range=7
+
+max_ammo=10
+start_ammo=50
+
+unlock_on_start=False
+is_automatic=True
+loose_on_death=False
+uses_ammo=True
+does_reload=False
+does_jam=False
+
+ammo_type=Pistol
+
+# From 0-9
+weapon_id=4
+
+reload_time=1
+fire_time=0.1
+
+[Audio Info]
+loudness=0.6
+fire_sfx=Audio\Weapons\Wolf MINI\fire.wav
+reload_sfx=
+jam_sfx=

@@ -1,0 +1,8 @@
+[Info]
+type=scene
+name=Default Scene
+
+[Scene Info]
+difficulty=0
+scene_order=0
+description=The default scene for FireEngine.

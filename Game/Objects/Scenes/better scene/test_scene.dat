@@ -1,0 +1,8 @@
+[Info]
+type=scene
+name=Test Scene
+
+[Scene Info]
+difficulty=3
+scene_order=0
+description=A cool test scene!

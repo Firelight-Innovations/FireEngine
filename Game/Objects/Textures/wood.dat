@@ -1,0 +1,11 @@
+[Info]
+type=texture
+name=wood
+
+[Texture Info]
+location=Textures\Surfaces\wolf_wood.png
+icon=W
+
+[Audio Info]
+hit_sfx=Audio\
+walk_sfx=Audio\

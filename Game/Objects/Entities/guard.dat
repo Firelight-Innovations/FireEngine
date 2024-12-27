@@ -1,0 +1,40 @@
+[Info]
+type=entity
+name=guard
+
+[Entity Info]
+icon=$
+hitbox_x=0.25
+hitbox_y=0.25
+animation=Textures\Entities\Guard\guard_sheet.png
+
+# Size of each object on sprite sheet (x,y)
+texture_size=64,64
+texture_buffer=1
+
+speed=1
+#types: pistol, shotgun, rifle, (custom types)
+weapon=pistol
+health=100
+armor=0
+damage_low=5
+damage_high=20
+fire_range=3
+hit_chance_close=0.8
+hit_chance_far=0.2
+fire_freq_low=0.5
+fire_freq_high=0.3
+
+[AI Info]
+view_range=10
+#types: raycast, a_star, communicative, (custom types)
+ai_system=raycast
+patrol_wait=2
+
+[Audio Info]
+death_sfx=Audio\Entities\Guard\Death
+gore_sfx=Audio\Entities\Guard\Gore
+scream_sfx=Audio\Entities\Guard\Scream
+pistol_sfx=Audio\Entities\Guard\Gun\Pistol Single Shot.wav
+shotgun_sfx=Audio\Entities\Guard\Gun
+rifle_sfx=Audio\Entities\Guard\Gun

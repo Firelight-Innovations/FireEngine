@@ -5,6 +5,7 @@ def singleton(cls):
     def get_instance(*args, **kwargs):
         if cls not in instances:
             instances[cls] = cls(*args, **kwargs)
+
         return instances[cls]
 
     return get_instance
@@ -14,11 +15,13 @@ def register(cls):
     original_init = cls.__init__
 
     def new_init(self, *args, **kwargs):
-        import main
+        from FireEngine.core import manager
+
         # Call the original __init__ method
         original_init(self, *args, **kwargs)
+
         # Automatically register this instance with the GameManager
-        main.Game.register(self)
+        manager.Game.register(self)
 
     cls.__init__ = new_init
     return cls

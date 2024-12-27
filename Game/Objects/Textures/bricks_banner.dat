@@ -1,0 +1,11 @@
+[Info]
+type=texture
+name=banner bricks
+
+[Texture Info]
+location=Textures\Surfaces\wolf_brickbanner.png
+icon=@
+
+[Audio Info]
+hit_sfx=Audio\
+walk_sfx=Audio\

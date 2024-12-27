@@ -1,0 +1,11 @@
+[Info]
+type=texture
+name=stone
+
+[Texture Info]
+location=Textures\Surfaces\wolf_stone.png
+icon=S
+
+[Audio Info]
+hit_sfx=Audio\
+walk_sfx=Audio\
