@@ -303,12 +303,66 @@ class scene_loader:
                     data = data
                 )
 
+    def load_dropables_data(self):
+        """Loads all sprites into a list"""
+        from FireEngine.core.resources import resource_loading
+        from FireEngine.core.resources import data_containers
+
+        texture_path = os.path.join(resource_loading.Objects, "Dropables")
+
+        for file in os.listdir(texture_path):
+            if file.endswith('.dat'):  # Check if the file is a .dat file
+                # Read the .dat file       
+                data_file = configparser.ConfigParser()
+                data_file.read(os.path.join(texture_path, file))
+
+                if data_file['Info']['type'] != 'dropable':
+                    continue
+
+                name = data_file['Info']['name']
+                icon = data_file['Dropable Info']['icon']
+                data = {}
+
+                data = {
+                    'hitbox_x': float(data_file['Dropable Info']['hitbox_x']),
+                    'hitbox_y': float(data_file['Dropable Info']['hitbox_y']),
+                    'texture': str(data_file['Dropable Info']['texture']),
+
+                    'health': int(data_file['Dropable Info']['health']),
+                    'max_health': int(data_file['Dropable Info']['max_health']),
+                    'armor': int(data_file['Dropable Info']['armor']),
+                    'max_armor': int(data_file['Dropable Info']['max_armor']),
+                    'stamina': float(data_file['Dropable Info']['stamina']),
+                    'max_stamina': float(data_file['Dropable Info']['max_stamina']),
+
+                    'score': int(data_file['Dropable Info']['score']),
+
+                    'give_weapon_id': int(data_file['Dropable Info']['give_weapon_id']),
+
+                    'pistol_ammo': int(data_file['Dropable Info']['pistol_ammo']),
+                    'shotgun_ammo': int(data_file['Dropable Info']['shotgun_ammo']),
+                    'rifle_ammo': int(data_file['Dropable Info']['rifle_ammo']),
+
+                    'pickup_vfx': str(data_file['Dropable Info']['pickup_vfx']),
+
+                    #my Audio Info
+                    'pickup_sfx': str(data_file['Audio Info']['pickup_sfx'])
+                }  
+
+                # Load from .dat into memory 
+                resource_loading.dropables[name] = data_containers.dropable(
+                    name = name,
+                    icon = icon,
+                    data = data
+                )
+
     def load_scene(self, scene_name:str):
         """Loads a scene from it's name"""
         from FireEngine.core.resources import resource_loading
         from FireEngine.core import scene
         from FireEngine.objects import entity
         from FireEngine.objects import sprite
+        from FireEngine.objects import dropable
         from FireEngine.player import player
 
         ########################
@@ -360,6 +414,19 @@ class scene_loader:
         #   Loads dimentional object data   #
         #####################################
 
+        ############################
+        #   Loads dropables data   #
+        ############################
+        self.load_dropables_data()
+
+        # Instanitates dropables into memory
+        for drop in resource_loading.dropables:
+            for y in range(len(scene.scene_data)):
+                for x in range(len(scene.scene_data[y])):
+                    if scene.scene_data[y][x] == resource_loading.dropables[drop].icon:
+                        scene.scene_data[y] = scene.scene_data[y][:x] + ' ' + scene.scene_data[y][x+1:]
+                        dropable.dropable(x, y, 0, _dropable=resource_loading.dropables[drop]) # Instantiates a new sprite object, inherits from the sprite class
+
         ########################
         #   Loads audio data   #
         ########################
@@ -372,10 +439,6 @@ class scene_loader:
         #   Loads weapon data   #
         #########################
         self.load_weapon_data()
-
-        ############################
-        #   Loads dropables data   #
-        ############################
 
     def detect_encoding(self, file_path):
         from FireEngine.core.resources import resource_loading

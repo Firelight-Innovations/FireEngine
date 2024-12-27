@@ -214,4 +214,36 @@ class dropable:
              name='', 
              icon='',
              data={}):
-        pass
+        from FireEngine.core.resources import resource_loading
+        import arcade
+        import os
+    
+        # Info
+        self.name = name
+
+        # Entity Info
+        self.icon = icon
+        self.hitbox_x = float(data['hitbox_x'])
+        self.hitbox_y = float(data['hitbox_y'])
+
+        self.health = data['health']
+        self.max_health = data['max_health']
+        self.armor = data['armor']
+        self.max_armor = data['max_armor']
+        self.stamina = data['stamina']
+        self.max_stamina = data['max_stamina']
+
+        self.score = data['score']
+
+        self.give_weapon_id = data['give_weapon_id']
+
+        self.pistol_ammo = data['pistol_ammo']
+        self.shotgun_ammo = data['shotgun_ammo']
+        self.rifle_ammo = data['rifle_ammo']
+
+        self.pickup_vfx = data['pickup_vfx']
+
+        # Asset loading
+        self.texture = arcade.load_texture(os.path.join(resource_loading.Assets, data['texture']))
+        self.texture_path = os.path.join(resource_loading.Assets, data['texture'])
+        self.pickup_sfx = arcade.load_sound(os.path.join(resource_loading.Assets, data['pickup_sfx']))

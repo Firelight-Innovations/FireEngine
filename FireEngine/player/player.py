@@ -28,6 +28,8 @@ class player():
         self.rifle_ammo = 90
         self.shotgun_ammo = 20
 
+        self.score = 0
+
         self.pressed = False
         self.allow_shoot = True
 
@@ -319,9 +321,6 @@ class player():
             dam = damage
 
         self.health -= dam
-        
-    def heal_player(self, heal):
-        '''Heals the player and plays a sound effect'''
 
     def load_weapon(self):
         from FireEngine.core.resources import resource_loading
@@ -432,9 +431,11 @@ class player():
         self.frame_time = current_time - self.last_time
         self.last_time = current_time
 
+        '''
         # Heal over time
         if(self.health < self.max_health):
             self.health += 6.5 * delta_time
+        '''
 
         # Update screen effects
         if(self.health_vfx_indicator > 0):
