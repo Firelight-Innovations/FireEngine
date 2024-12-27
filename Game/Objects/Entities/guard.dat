@@ -7,6 +7,11 @@ icon=$
 hitbox_x=0.25
 hitbox_y=0.25
 animation=Textures\Entities\Guard\guard_sheet.png
+
+# Size of each object on sprite sheet (x,y)
+texture_size=64,64
+texture_buffer=1
+
 speed=1
 #types: pistol, shotgun, rifle, (custom types)
 weapon=pistol

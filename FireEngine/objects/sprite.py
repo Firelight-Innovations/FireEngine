@@ -81,7 +81,7 @@ class sprite:
 
                         if loop:
                             output_folder = os.path.join(resource_loading.Cache)
-                            output_file = f"{x}{y}{i}{j}-{height * random.randint(0, 10)}.png"
+                            output_file = f"{x}{y}{i}{j}-{height * random.randint(0, 100000)}.png"
 
                             # Ensure the folder exists
                             os.makedirs(output_folder, exist_ok=True)
@@ -121,7 +121,7 @@ class sprite:
             image = texture.image
 
             output_folder = os.path.join(resource_loading.Cache)
-            output_file = f"{height * random.randint(0, 10)}.png"
+            output_file = f"{height * random.randint(0, 100000)}.png"
 
             # Ensure the folder exists
             os.makedirs(output_folder, exist_ok=True)

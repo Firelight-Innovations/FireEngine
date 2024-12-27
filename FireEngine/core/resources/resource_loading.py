@@ -36,6 +36,52 @@ def load_animation(folder_path, return_paths=False):
     else:
         return frames
     
+def load_sprite_sheet(path, texture_size_x=64, texture_size_y=64, texture_buffer=1, return_paths=False):
+    import random
+    y = 0
+    x = 0
+    loop = True
+
+    paths = []
+    textures = []
+
+    while loop:
+        try:
+            texture = arcade.load_texture(
+                path,
+                x=x,
+                y=y,
+                width=texture_size_x,
+                height=texture_size_y
+            )
+
+            x += texture_size_x + texture_buffer
+
+            # Check if all pixels are fully transparent
+            image = texture.image
+            loop = not all(pixel == (0, 0, 0, 0) for pixel in image.getdata())
+
+            if loop:
+                output_folder = os.path.join(Cache)
+                output_file = f"{x}{y}-{random.randint(0, 100000)}.png"
+
+                # Ensure the folder exists
+                os.makedirs(output_folder, exist_ok=True)
+                            
+                # Save the image to the specified folder
+                output_path = os.path.join(output_folder, output_file)
+                image.save(output_path)
+
+                textures.append(texture)
+                paths.append(output_path)
+        except:
+            loop = False
+
+    if return_paths:
+        return textures, paths
+    else:
+        return textures
+
 def load_folder_sounds(folder_path):
     """Load all gore/scream sounds from the specified folder."""
     folder_contents = []

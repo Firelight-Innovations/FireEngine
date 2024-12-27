@@ -221,6 +221,7 @@ class scene_loader:
                     'animation_sheet': data_file['Sprite Info']['animation_sheet'],
                     'transparent': str_to_bool[data_file['Sprite Info']['transparent']],
                     'postional': str_to_bool[data_file['Sprite Info']['postional']],
+
                     # Audio Info
                     'hit_sfx': data_file['Audio Info']['hit_sfx'],
                 }  
@@ -258,42 +259,49 @@ class scene_loader:
                 name = data_file['Info']['name']
                 data = {}
 
+                x, y = data_file['Weapon Info']['texture_size'].split(',')
+
                 data = {
                     # Weapon info
-                    'fire_animation': data_file['Weapon Info']['fire_animation'],
-                    'reload_animation': data_file['Weapon Info']['reload_animation'],
-                    'jam_animation': data_file['Weapon Info']['jam_animation'],
-                    'texture_size': data_file['Weapon Info']['texture_size'],
-                    'texture_buffer': data_file['Weapon Info']['texture_buffer'],
-                    'damage_high': data_file['Weapon Info']['damage_high'],
-                    'damage_low': data_file['Weapon Info']['damage_low'],
-                    'range': data_file['Weapon Info']['range'],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
-                    '': data_file['Weapon Info'][''],
+                    'fire_animation': str(data_file['Weapon Info']['fire_animation']),
+                    'reload_animation': str(data_file['Weapon Info']['reload_animation']),
+                    'jam_animation': str(data_file['Weapon Info']['jam_animation']),
+                    'texture_size_x': int(x),
+                    'texture_size_y': int(y),
+                    'texture_buffer': int(data_file['Weapon Info']['texture_buffer']),
+                    'weapon_x': float(data_file['Weapon Info']['weapon_x']),
+                    'weapon_y': float(data_file['Weapon Info']['weapon_y']),
+                    'weapon_scale': float(data_file['Weapon Info']['weapon_scale']),
+                    'damage_high': int(data_file['Weapon Info']['damage_high']),
+                    'damage_low': int(data_file['Weapon Info']['damage_low']),
+                    'range': float(data_file['Weapon Info']['range']),
+                    'max_ammo': int(data_file['Weapon Info']['max_ammo']),
+                    'start_ammo': int(data_file['Weapon Info']['start_ammo']),
+
+                    'unlock_on_start': str_to_bool[data_file['Weapon Info']['unlock_on_start']],
+                    'is_automatic': str_to_bool[data_file['Weapon Info']['is_automatic']],
+                    'loose_on_death': str_to_bool[data_file['Weapon Info']['loose_on_death']],
+                    'uses_ammo': str_to_bool[data_file['Weapon Info']['uses_ammo']],
+                    'does_reload': str_to_bool[data_file['Weapon Info']['does_reload']],
+                    'does_jam': str_to_bool[data_file['Weapon Info']['does_jam']],
+
+                    'ammo_type': str(data_file['Weapon Info']['ammo_type']),
+                    'weapon_id': int(data_file['Weapon Info']['weapon_id']),
+                    'reload_time': float(data_file['Weapon Info']['reload_time']),
+                    'fire_time': float(data_file['Weapon Info']['fire_time']),
 
                     # Audio Info
-                    '': data_file['Audio Info'][''],
-                    '': data_file['Audio Info'][''],
-                    '': data_file['Audio Info'][''],
-                    '': data_file['Audio Info'][''],
+                    'loudness': float(data_file['Audio Info']['loudness']),
+                    'fire_sfx': str(data_file['Audio Info']['fire_sfx']),
+                    'reload_sfx': str(data_file['Audio Info']['reload_sfx']),
+                    'jam_sfx': str(data_file['Audio Info']['jam_sfx']),
                 }  
 
                 # Load from .dat into memory 
-                resource_loading.sprites[name] = data_containers.sprite(
+                resource_loading.weapons[data['weapon_id']] = data_containers.weapon(
                     name = name,
                     data = data
                 )
-
 
     def load_scene(self, scene_name:str):
         """Loads a scene from it's name"""
@@ -363,6 +371,7 @@ class scene_loader:
         #########################
         #   Loads weapon data   #
         #########################
+        self.load_weapon_data()
 
         ############################
         #   Loads dropables data   #

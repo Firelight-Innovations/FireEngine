@@ -8,6 +8,9 @@ import arcade.color
 import arcade.key
 import os
 
+import arcade.key
+import arcade.key
+
 
 # Constants
 SCREEN_TITLE = "Minenstien"
@@ -47,8 +50,28 @@ class GameLoop(arcade.Window):
             manager.Game.turn_right(True)
         elif key == arcade.key.E:  # Interact with objects
             manager.Game.interact()  # Call interaction function
-        elif key == arcade.key.SPACE:  # Example: SPACE key for shooting
-            manager.Game.shoot()
+        elif key == arcade.key.SPACE: # SPACE key for shooting
+            manager.Game.shoot(True) 
+        elif key == arcade.key.KEY_0: # Change the weapon
+            manager.Game.change_weapon(0)
+        elif key == arcade.key.KEY_1:
+            manager.Game.change_weapon(1)
+        elif key == arcade.key.KEY_2:
+            manager.Game.change_weapon(2)
+        elif key == arcade.key.KEY_3:
+            manager.Game.change_weapon(3)
+        elif key == arcade.key.KEY_4:
+            manager.Game.change_weapon(4)
+        elif key == arcade.key.KEY_5:
+            manager.Game.change_weapon(5)
+        elif key == arcade.key.KEY_6:
+            manager.Game.change_weapon(6)
+        elif key == arcade.key.KEY_7:
+            manager.Game.change_weapon(7)
+        elif key == arcade.key.KEY_8:
+            manager.Game.change_weapon(8)
+        elif key == arcade.key.KEY_9:
+            manager.Game.change_weapon(9)
 
     def on_key_release(self, key, modifiers):
         """Handle key release events."""
@@ -64,6 +87,8 @@ class GameLoop(arcade.Window):
             manager.Game.turn_left(False)
         elif key == arcade.key.RIGHT:  # Stop turning right
             manager.Game.turn_right(False)
+        elif key == arcade.key.SPACE: # SPACE key for shooting
+            manager.Game.shoot(False) 
 
 #############################
 #   Importing engine code   #
@@ -99,7 +124,7 @@ if __name__ == "__main__":
     from FireEngine.player import player
     from FireEngine.player import interact
 
-    # from FireEngine.audio import audio
+    from FireEngine.audio import audio
     from FireEngine.ui import debug
     from FireEngine.ui import game_ui
 

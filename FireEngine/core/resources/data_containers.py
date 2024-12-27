@@ -157,9 +157,57 @@ class sprite:
 class weapon:
     def __init__(self, 
              name='', 
-             icon='',
              data={}):
-        pass
+        from FireEngine.core.resources import resource_loading
+        import arcade
+        import os
+        
+        # Info
+        self.name = name
+
+        # Weapon info
+        self.texture_size_x = data['texture_size_x']
+        self.texture_size_y = data['texture_size_y']
+        self.texture_buffer = data['texture_buffer']
+        self.weapon_x = data['weapon_x']
+        self.weapon_y = data['weapon_y']
+        self.weapon_scale = data['weapon_scale']
+        self.damage_high = data['damage_high']
+        self.damage_low = data['damage_low']
+        self.range = data['range']
+        self.max_ammo = data['max_ammo']
+        self.start_ammo = data['start_ammo']
+        self.unlock_on_start = data['unlock_on_start']
+        self.is_automatic = data['is_automatic']
+        self.loose_on_death = data['loose_on_death']
+        self.uses_ammo = data['uses_ammo']
+        self.does_reload = data['does_reload']
+        self.does_jam = data['does_jam']
+        self.ammo_type = data['ammo_type']
+        self.weapon_id = data['weapon_id']
+        self.reload_time = data['reload_time']
+        self.fire_time = data['fire_time']
+
+        # Asset loading
+        self.fire_animation = resource_loading.load_sprite_sheet(os.path.join(resource_loading.Assets, data['fire_animation']), self.texture_size_x, self.texture_size_y, self.texture_buffer)
+        self.fire_sfx = arcade.load_sound(os.path.join(resource_loading.Assets, data['fire_sfx']))
+
+        if self.does_reload:
+            self.reload_animation = resource_loading.load_sprite_sheet(os.path.join(resource_loading.Assets, data['reload_animation']), self.texture_size_x, self.texture_size_y, self.texture_buffer)
+            self.reload_sfx = arcade.load_sound(os.path.join(resource_loading.Assets, data['reload_sfx']))
+        else:
+            self.reload_animation = None
+            self.reload_sfx = None
+
+        if self.does_jam:
+            self.jam_animation = resource_loading.load_sprite_sheet(os.path.join(resource_loading.Assets, data['jam_animation']), self.texture_size_x, self.texture_size_y, self.texture_buffer)
+            self.jam_sfx = arcade.load_sound(os.path.join(resource_loading.Assets, data['jam_sfx']))
+        else:
+            self.jam_animation = None
+            self.jam_animation = None
+
+        # Audio Info
+        self.loudness = data['loudness']
 
 class dropable:
     def __init__(self, 

@@ -92,9 +92,9 @@ class game_manager:
     #   WORLD INTERACTIONS   #
     ##########################
 
-    def shoot(self):
+    def shoot(self, pressed: bool):
         """Calls 'on_shoot' on all registered objects."""
-        self.call_function("on_shoot")
+        self.call_function("on_shoot", pressed)
 
     def interact(self):
         """Calls 'on_interact' on all registered objects."""

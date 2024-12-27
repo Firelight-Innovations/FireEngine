@@ -17,8 +17,19 @@ class player():
         
         self.health = 100
         self.max_health = 100
-        self.ammo = 30
+
+        self.armor = 0
+        self.max_armor = 100
+
         self.stamia = 100
+        self.max_stamina = 100
+
+        self.pistol_ammo = 30
+        self.rifle_ammo = 90
+        self.shotgun_ammo = 20
+
+        self.pressed = False
+        self.allow_shoot = True
 
         ########################
         #   CAMERA & MOVEMENT  #
@@ -62,44 +73,6 @@ class player():
         self.last_footstep_time = 0  # To manage cooldown between footsteps
         self.footstep_cooldown = 0.4  # Minimum time between footsteps (in seconds)
         self.last_time = 0
-
-        ######################
-        #   GUN ATTRIBUTES   #
-        ######################
-
-        self.weapon_id = 0
-        self.unlocked_weapons = [
-            True,
-            False,
-            False,
-            False,
-            False,
-            False,
-            False,
-            False,
-            False,
-            False
-        ]
-
-        # Gun position variables
-        self.gun_x = render.SCREEN_WIDTH // 2
-        self.gun_y = render.SCREEN_HEIGHT // 4  # Slightly lower than center for perspective
-        
-        # Bobbing effect variables
-        self.bob_phase = 0  # Tracks the sine wave phase
-        self.bob_amplitude = 5  # How much the gun moves up/down
-        self.bob_speed = 5  # Speed of bobbing motion  
-
-        # Gun animation loading
-        self.gun_animation_frames = resource_loading.load_animation(os.path.join(resource_loading.Assets, "Textures\\Guns\\Pistol"))
-        self.current_frame_index = 0  # Track the current frame of the animation
-        self.animation_timer = 0      # Timer to control frame rate
-        self.animation_speed = 0.07   # Time (in seconds) between frames
-        self.is_shooting = False      # Flag to indicate if the gun is animating
-        self.is_reloading = False
-
-        # Gun sounds
-        self.gun_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, "Audio\\Player\\Guns\\Pistol"))
 
         #####################
         #   SCREEN EFFECT   #
@@ -204,15 +177,6 @@ class player():
             random_sound = random.choice(self.footstep_sounds)
             arcade.play_sound(random_sound, volume=0.2)  #  Adjust volume as needed
 
-    def play_gun_sound(self):
-        """Play a random gun sound."""
-        import random
-        import arcade
-
-        if self.gun_sounds:
-            random_sound = random.choice(self.gun_sounds)
-            arcade.play_sound(random_sound, volume=0.5)  # Adjust volume as needed
-
     def gun_logic(self, delta_time):
         from FireEngine.core import render
         import math
@@ -220,8 +184,8 @@ class player():
         # Bobs gun as player moves
         if self.is_moving:
             self.bob_phase += self.bob_speed * delta_time
-            self.gun_y = (render.SCREEN_HEIGHT // 4) + math.sin(self.bob_phase) * self.bob_amplitude
-            self.gun_x = (render.SCREEN_WIDTH // 2) + math.cos(self.bob_phase) * (self.bob_amplitude / 2)
+            self.x = (render.SCREEN_WIDTH // self.weapon_x) + math.cos(self.bob_phase) * (self.bob_amplitude / self.weapon_x)
+            self.y = (render.SCREEN_HEIGHT // self.weapon_y) + math.sin(self.bob_phase) * self.bob_amplitude
         else:
             self.bob_phase = 0
             self.gun_y = render.SCREEN_HEIGHT // 4
@@ -231,7 +195,7 @@ class player():
         #############################
 
         # Update gun animation if shooting
-        if self.is_shooting:
+        if self.is_firing:
             self.animation_timer += delta_time
 
             # Advance to next frame when enough time has passed
@@ -240,8 +204,8 @@ class player():
                 self.current_frame_index += 1
 
                 # Stop animation if we've reached the last frame
-                if self.current_frame_index >= len(self.gun_animation_frames):
-                    self.is_shooting = False  # End shooting animation
+                if self.current_frame_index >= len(self.weapon_animation_frames):
+                    self.is_firing = False  # End shooting animation
                     self.current_frame_index = 0  # Reset frame index for next
 
     def shoot(self):
@@ -252,15 +216,16 @@ class player():
         from FireEngine.core import render
         from FireEngine.core.resources import resource_loading
         import math
+        import random
         
         # Play a gun sound when shooting
         if self.current_frame_index != 0:
             return
 
-        self.play_gun_sound()
+        arcade.play_sound(self.fire_sfx, volume=self.loudness)  # Adjust volume as needed
 
         # Start gun animation
-        self.is_shooting = True
+        self.is_firing = True
         self.current_frame_index = 1  # Reset to the first frame of the animation
         self.animation_timer = 0      # Reset animation timer
 
@@ -297,7 +262,7 @@ class player():
 
         # Perform DDA to find where the ray hits a wall or sprite
         hit_wall = False
-        max_distance = render.MAX_DEPTH  # Limit how far the ray can travel
+        max_distance = resource_loading.weapons[self.weapon_id].range  # Limit how far the ray can travel
 
         while not hit_wall and max_distance > 0:
             max_distance -= 0.05
@@ -328,7 +293,8 @@ class player():
                 if abs(map_x - ent.x) <= ent.hitbox_x:
                     if abs(map_y - ent.y) <= ent.hitbox_y:
                         if not ent.is_dying:
-                            ent.hurt_entity(ent, 25, self)
+                            damage = random.randint(resource_loading.weapons[self.weapon_id].damage_low, resource_loading.weapons[self.weapon_id].damage_high)
+                            ent.hurt_entity(ent, damage, self)
                             return  # Stop after hitting a sprite
                         
             # Check for sprite collision at this grid cell during traversal
@@ -357,9 +323,77 @@ class player():
     def heal_player(self, heal):
         '''Heals the player and plays a sound effect'''
 
+    def load_weapon(self):
+        from FireEngine.core.resources import resource_loading
+        from FireEngine.core import render
+
+        # Load weapon stats from memory
+        # Gun position variables
+        self.weapon_x = resource_loading.weapons[self.weapon_id].weapon_x
+        self.weapon_y = resource_loading.weapons[self.weapon_id].weapon_y  # Slightly lower than center for perspective
+        self.weapon_scale = resource_loading.weapons[self.weapon_id].weapon_scale
+
+        self.x = render.SCREEN_WIDTH // self.weapon_x
+        self.y = render.SCREEN_HEIGHT // self.weapon_y
+        
+        # Bobbing effect variables
+        self.bob_phase = 0  # Tracks the sine wave phase
+        self.bob_amplitude = 5  # How much the gun moves up/down
+        self.bob_speed = 5  # Speed of bobbing motion  
+
+        # Gun animation loading
+        self.weapon_animation_frames = resource_loading.weapons[self.weapon_id].fire_animation
+        self.current_frame_index = 0  # Track the current frame of the animation
+        self.animation_timer = 0      # Timer to control frame rate
+        self.animation_speed = resource_loading.weapons[self.weapon_id].fire_time / len(resource_loading.weapons[self.weapon_id].fire_animation)   # Time (in seconds) between frames
+        self.is_firing = False      # Flag to indicate if the gun is animating
+        self.is_reloading = False
+        self.is_automatic = resource_loading.weapons[self.weapon_id].is_automatic
+
+        # Gun sounds
+        self.fire_sfx = resource_loading.weapons[self.weapon_id].fire_sfx
+        self.loudness = resource_loading.weapons[self.weapon_id].loudness
+
     ########################
     #   Update functions   #
     ########################
+
+    def on_start(self):
+        from FireEngine.core import render
+        from FireEngine.core.resources import resource_loading
+        ######################
+        #   GUN ATTRIBUTES   #
+        ######################
+
+        self.weapon_id = 0
+        self.unlocked_weapons = [
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False
+        ]
+
+        # sets unlocked weapons from file
+        for weapon in resource_loading.weapons:
+            self.unlocked_weapons[weapon] = resource_loading.weapons[weapon].unlock_on_start
+
+        # Sets start weapon
+        i = 0
+
+        for unlocked in self.unlocked_weapons:
+            if unlocked == True:
+                self.weapon_id = i
+                break
+            
+            i += 1
+
+        self.load_weapon()
 
     def on_update(self, delta_time: float): 
         import math
@@ -398,48 +432,62 @@ class player():
         self.frame_time = current_time - self.last_time
         self.last_time = current_time
 
-        self.gun_logic(delta_time)
-
         # Heal over time
         if(self.health < self.max_health):
             self.health += 6.5 * delta_time
 
-                # Update screen effects
-        
+        # Update screen effects
         if(self.health_vfx_indicator > 0):
             self.health_vfx_indicator -= delta_time
+
+        self.gun_logic(delta_time=delta_time)
+
+                            # Fires the gun
+        if self.is_automatic:
+            if self.pressed:
+                self.shoot()
+        else:
+            if self.pressed and self.allow_shoot:
+                self.shoot()
+                self.allow_shoot = False
+
+            if self.allow_shoot == False and self.pressed == False:
+                self.allow_shoot = True
 
     def on_render(self):
         from FireEngine.core import render
         import arcade
         import arcade.gl
+        from FireEngine.core.resources import resource_loading
 
         self.priority = 1
 
         # Draw gun texture (either static or animated)
-        if self.is_shooting:
-            current_frame = self.gun_animation_frames[self.current_frame_index]
-            texture = arcade.draw_texture_rectangle(
-                center_x=self.gun_x - 20,
-                center_y=self.gun_y,
-                width=128 * 2.5,  # Adjust based on your texture size
-                height=128 * 2.5,
+        if self.is_firing:
+            current_frame = self.weapon_animation_frames[self.current_frame_index]
+            sprite = arcade.Sprite(
+                center_x=self.x,
+                center_y=self.y,
                 texture=current_frame # type: ignore
             )
 
-            # texture.filter(arcade.gl.NEAREST)
+            sprite.width = resource_loading.weapons[self.weapon_id].texture_size_x
+            sprite.height = resource_loading.weapons[self.weapon_id].texture_size_y
+            sprite.scale = resource_loading.weapons[self.weapon_id].weapon_scale
         else:
             # Draw static gun texture when not shooting (optional)
-            texture = arcade.draw_texture_rectangle(
-                center_x=self.gun_x - 20,
-                center_y=self.gun_y,
-                width=128 * 2.5,
-                height=128 * 2.5,
-                texture=self.gun_animation_frames[0]  # Default static frame # type: ignore
+            sprite = arcade.Sprite(
+                center_x=self.x,
+                center_y=self.y,
+                texture=self.weapon_animation_frames[0]  # Default static frame # type: ignore
             )
 
-            # texture.filter(arcade.gl.NEAREST)
+            sprite.width = resource_loading.weapons[self.weapon_id].texture_size_x
+            sprite.height = resource_loading.weapons[self.weapon_id].texture_size_y
+            sprite.scale = resource_loading.weapons[self.weapon_id].weapon_scale
 
+        sprite.draw(filter=arcade.gl.NEAREST)
+            
         # Screen effects
         arcade.draw_rectangle_filled(
             center_x=render.SCREEN_WIDTH // 2,
@@ -449,14 +497,18 @@ class player():
             color=(255, 0, 0, int((self.health_vfx_indicator / self.health_vfx_indicator_time) * 100) + max(0, min((100 - self.health), 100)))
         )
 
-    def on_shoot(self):
-        self.shoot()
+    def on_shoot(self, pressed):
+        self.pressed = pressed
 
     def on_change_weapon(self, id):
         from FireEngine.core.resources import resource_loading
+        from FireEngine.core import render
         if self.unlocked_weapons[id] == True:
-            self.weapon_id = id
-            # Load weapon stats from memory
+           self.weapon_id = id
+        else:
+            return
+
+        self.load_weapon()
 
     def on_move_up(self, state: bool):
         self.move_up = state
