@@ -22,27 +22,27 @@ class debug():
         # Define the grid size (matches TILE_SIZE)
 
         # Draw horizontal lines
-        for x in range(render.Render.screen_height, render.Render.screen_height - (len(scene.scene_data) * scene.TILE_SIZE), - scene.TILE_SIZE):
+        for x in range(render.SCREEN_HEIGHT, render.SCREEN_HEIGHT - (len(scene.scene_data) * scene.TILE_SIZE), - scene.TILE_SIZE):
             arcade.draw_line(0, x, len(scene.scene_data[0]) * scene.TILE_SIZE, x, arcade.color.LIGHT_GRAY)
 
         # Draw vertical lines
         for y in range(0, len(scene.scene_data[0]) * scene.TILE_SIZE, scene.TILE_SIZE):
-            arcade.draw_line(y, render.Render.screen_height, y, render.Render.screen_height - (len(scene.scene_data) * scene.TILE_SIZE), arcade.color.LIGHT_GRAY)
+            arcade.draw_line(y, render.SCREEN_HEIGHT, y, render.SCREEN_HEIGHT - (len(scene.scene_data) * scene.TILE_SIZE), arcade.color.LIGHT_GRAY)
 
     def draw_stats(self):
         """Draw FPS counter and general game stats in the top-right corner."""
-        import main
-        from FireEngine.objects import sprite
         from FireEngine.core import render
         from FireEngine.player import player
         
         # Display FPS in top-right corner
+        '''
         arcade.draw_text(
-            f"FPS: {self.fps:.1f} \nPlayer X: {player.Player.player_x:.1f} \nPlayer Y: {player.Player.player_y:.1f} \nPlayer Rot: {(player.Player.player_angle * (180 / math.pi)):.1f}º \nSprites on Screen: {(sprite.sprite_count)}", 
+            f"FPS: {self.fps:.1f} \nPlayer X: {player.Player.player_x:.1f} \nPlayer Y: {player.Player.player_y:.1f} \nPlayer Rot: {(player.Player.player_angle * (180 / math.pi)):.1f}º \nObjects on Screen: {render.Render.object_count}", 
             10, 
             render.SCREEN_HEIGHT - 20, 
             arcade.color.BLACK
         )
+        '''
 
     def draw_map(self):
         from FireEngine.core import scene

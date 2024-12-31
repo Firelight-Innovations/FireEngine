@@ -1,4 +1,3 @@
-from FireEngine.core.decorators import singleton
 from FireEngine.core.decorators import register
 
 # List of dropables in the game world

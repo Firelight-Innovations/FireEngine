@@ -2,8 +2,6 @@
 # IMPORTANT: Classes are loaded & instantiated based on the order of imports in this file!
 
 # Importing depedencies 
-import os
-
 import arcade
 import arcade.color
 import arcade.color
@@ -17,7 +15,7 @@ SCREEN_TITLE = "FireEngine Kraken"
 
 class GameLoop(arcade.Window):
     def __init__(self):
-        super().__init__(render.SCREEN_WIDTH, render.SCREEN_HEIGHT, SCREEN_TITLE, resizable=True, vsync=True, update_rate=1/60) # type: ignore
+        super().__init__(1440, 810, SCREEN_TITLE, resizable=True, vsync=True, update_rate=1/60) # type: ignore
 
         # clears game cache
         resource_loading.delete_all_files_in_directory(resource_loading.Cache)
@@ -95,8 +93,13 @@ class GameLoop(arcade.Window):
         import sys
         from FireEngine.audio import audio
         
+        '''
         # Perform audio cleanup
-        audio.audiomanager.cleanup()
+        try:
+            audio.audiomanager.cleanup()
+        finally:
+            pass
+        '''
         
         # Exit the program gracefully
         super().on_close()

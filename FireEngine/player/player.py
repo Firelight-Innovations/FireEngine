@@ -9,6 +9,7 @@ class player():
         from FireEngine.core import scene
         from FireEngine.core import render
         from FireEngine.core.resources import resource_loading
+        import math
         import os
 
         #########################
@@ -61,6 +62,9 @@ class player():
         # Initialize camera plane (adjust for FOV)
         self.plane_x = 0.0
         self.plane_y = 0.66
+
+        self.FOV = math.pi / 3 # Field of view (60 degrees)
+        self.original_FOV = self.FOV
 
         ##################
         #   FOOT STEPS   #

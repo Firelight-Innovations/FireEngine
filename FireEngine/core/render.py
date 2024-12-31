@@ -1,13 +1,11 @@
-import os
 import math
-from FireEngine.core.decorators import singleton
-from FireEngine.core.decorators import register
+from FireEngine.core.decorators import singleton, register
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-FOV = math.pi / 3 # Field of view (60 degrees)
-NUM_RAYS = 200     # Number of rays casted for rendering
+RAYS_PER_100_PIXELS = 4
+NUM_RAYS = 400     # Number of rays casted for rendering
 
 MAX_DEPTH = 30
 
@@ -18,16 +16,22 @@ class render():
         from FireEngine.player import player
         import arcade
 
-        self.screen_width = SCREEN_WIDTH
-        self.screen_height = SCREEN_HEIGHT
+        global SCREEN_WIDTH
+        global SCREEN_HEIGHT
+
+        SCREEN_WIDTH, SCREEN_HEIGHT = arcade.get_display_size()
+
+        self.aspect_ratio = SCREEN_WIDTH / SCREEN_HEIGHT
+        player.Player.FOV = player.Player.original_FOV * self.aspect_ratio
 
         # Initialize ZBuffer as a list with length equal to screen width
-        self.z_buffer = [float('inf')] * self.screen_width
+        self.z_buffer = [float('inf')] * SCREEN_WIDTH
         self.draw_list = arcade.SpriteList() # used for batching
 
         self.player = player.Player
         self.inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
         self.epsilon = 1e-6
+        self.object_count = 0
 
     def draw_objects(self):
         from FireEngine.objects import entity
@@ -36,7 +40,7 @@ class render():
         from FireEngine.player import player
         import arcade
             
-        object_count = 0
+        self.object_count = 0
 
         # Step 1: Sort object by distance from the player
         object_distances = []
@@ -63,20 +67,23 @@ class render():
             transform_x = inv_det * (player.Player.dir_y * entity_x - player.Player.dir_x * entity_y)
             transform_y = inv_det * (-player.Player.plane_y * entity_x + player.Player.plane_x * entity_y)
 
+            ray_angle = player.Player.player_angle - player.Player.FOV / 2
+            transform_y *= math.cos(ray_angle - player.Player.player_angle)
+
             # Check if the object is in front of the player (transform_y > 0)
             if transform_y <= 0:
                     continue
             
             # Step 3: Project the object onto the screen
-            entity_screen_x = int((self.screen_width / 2) * (1 + transform_x / transform_y))
+            entity_screen_x = int((SCREEN_WIDTH / 2) * (1 + transform_x / transform_y))
 
             # Calculate height and width of the object on screen
-            entity_height = abs(int(self.screen_height / transform_y))  # Correct scaling based on depth
-            entity_width = abs(int(self.screen_height / transform_y * (self.screen_width / self.screen_height)))
+            entity_height = abs(int(SCREEN_HEIGHT / transform_y))  # Correct scaling based on depth
+            entity_width = abs(int(SCREEN_HEIGHT / transform_y * self.aspect_ratio))
 
             # Calculate vertical start and end positions for drawing the object
-            draw_start_y = max(0, self.screen_height // 2 - entity_height // 2)
-            draw_end_y = min(self.screen_height, self.screen_height // 2 + entity_height // 2)
+            draw_start_y = max(0, SCREEN_HEIGHT // 2 - entity_height // 2)
+            draw_end_y = min(SCREEN_HEIGHT, SCREEN_HEIGHT // 2 + entity_height // 2)
 
             # Calculate horizontal start and end positions for drawing the object
             draw_start_x = int(entity_screen_x - (entity_width / 2))
@@ -86,13 +93,26 @@ class render():
             texture_width = texture.width
             texture_height = texture.height
 
-            object_count += 1
+            self.object_count += 1
+
+            '''
+            if not abs(draw_start_x) <= 2 * SCREEN_WIDTH and not abs(draw_start_x) <= -2 * SCREEN_WIDTH:
+                return
+            
+            if not abs(draw_end_x) <= 2 * SCREEN_WIDTH and not abs(draw_end_x) <= -2 * SCREEN_WIDTH:
+                return
+            '''
+                
+            draw_start_x = int(draw_start_x / (SCREEN_WIDTH / NUM_RAYS))
+            draw_end_x = int(draw_end_x / (SCREEN_WIDTH / NUM_RAYS))
 
             # Step 4: Draw each vertical stripe of the object if it's closer than walls (using ZBuffer)
             for stripe in range(draw_start_x, draw_end_x):
+                #print(f'{draw_start_x} {draw_end_x}')
+
                 # Only render if this part of the object is closer than any wall at this column
-                if stripe >= 0 and stripe < self.screen_width + (self.screen_width / NUM_RAYS):
-                    if transform_y > 0 and transform_y < self.z_buffer[round(stripe / (self.screen_width / NUM_RAYS))]: # Fix the minus one issues, causing one coloum to not be rendered, causing visual bugs                           
+                if stripe >= 0 and stripe < (SCREEN_WIDTH + (SCREEN_WIDTH / NUM_RAYS)) / (SCREEN_WIDTH / NUM_RAYS):
+                    if transform_y > 0 and transform_y < self.z_buffer[round(stripe)]: # Fix the minus one issues, causing one coloum to not be rendered, causing visual bugs                           
                         # Calculate texture column (X-axis) for current vertical stripe of object
                         percent_across_sprite = (stripe - draw_start_x) / float(draw_end_x - draw_start_x)
                         texture_column = int(percent_across_sprite * texture_width)
@@ -114,12 +134,12 @@ class render():
 
                         # Draw this slice of the texture on screen at this position
                         image = arcade.Sprite(
-                            center_x=stripe * (self.screen_width / NUM_RAYS) / 4,
+                            center_x=stripe * (SCREEN_WIDTH / NUM_RAYS),
                             center_y=(draw_start_y + draw_end_y) // 2,
                             texture=texture_slice,
                         )
                         
-                        image.width = 1
+                        image.width = SCREEN_WIDTH / NUM_RAYS * self.aspect_ratio
                         image.height = entity_height
                         self.draw_list.append(image)
 
@@ -134,7 +154,7 @@ class render():
         import arcade
 
         # Starting angle for the first ray (leftmost ray in player's FOV)
-        ray_angle = player.Player.player_angle - FOV / 2
+        ray_angle = player.Player.player_angle - player.Player.FOV / 2
 
         # Cast each ray
         for ray in range(NUM_RAYS + 1):
@@ -201,12 +221,12 @@ class render():
             # Store this distance in ZBuffer for this column of pixels
             self.z_buffer.append(perp_wall_dist)
 
-            line_height = int(self.screen_height / perp_wall_dist)
+            line_height = int(SCREEN_HEIGHT / perp_wall_dist)
 
-            draw_start = max(0, self.screen_height // 2 - line_height // 2)
-            draw_end = min(self.screen_height, self.screen_height // 2 + line_height // 2)
+            draw_start = max(0, SCREEN_HEIGHT // 2 - line_height // 2)
+            draw_end = min(SCREEN_HEIGHT, SCREEN_HEIGHT // 2 + line_height // 2)
 
-            ray_screen_position = int(ray * self.screen_width / NUM_RAYS)
+            ray_screen_position = int(ray * SCREEN_WIDTH / NUM_RAYS)
 
             if side == 0:
                 wall_x = player.Player.player_y + (map_x - player.Player.player_x + (1 - step_x) / 2) / ray_dir_x * ray_dir_y
@@ -266,12 +286,12 @@ class render():
                 texture = texture_slice,
             )
             
-            sprite.width = self.screen_width / (NUM_RAYS / 1.05)
+            sprite.width = SCREEN_WIDTH / NUM_RAYS
             sprite.height = line_height
 
             self.draw_list.append(sprite)
 
-            ray_angle += FOV / NUM_RAYS
+            ray_angle += player.Player.FOV / NUM_RAYS
 
         self.z_buffer.append(0)
     
@@ -349,6 +369,19 @@ class render():
     #   Update functions   #
     ########################
 
+    def on_update(self, delta_time):
+        import arcade
+        from FireEngine.player import player
+        
+        global SCREEN_WIDTH, SCREEN_HEIGHT
+        SCREEN_WIDTH, SCREEN_HEIGHT = arcade.get_window().get_size()
+        player.Player.FOV = math.pi / 3
+
+        #self.aspect_ratio = SCREEN_WIDTH / SCREEN_HEIGHT
+
+        # Recalculate FOV or other parameters if necessary
+        #player.Player.FOV = player.Player.original_FOV * self.aspect_ratio
+
     def on_render(self):
         import arcade
         import arcade.gl
@@ -357,19 +390,19 @@ class render():
 
         # Draws floor
         arcade.draw_rectangle_filled(
-            center_x=self.screen_width // 2,
-            center_y=self.screen_height // 4,  
-            width=self.screen_width,
-            height=self.screen_height // 2,
+            center_x=SCREEN_WIDTH // 2,
+            center_y=SCREEN_HEIGHT // 4,  
+            width=SCREEN_WIDTH,
+            height=SCREEN_HEIGHT // 2,
             color=(120, 120, 120, 255)
         )
         
         # Ceiling
         arcade.draw_rectangle_filled(
-            center_x=self.screen_width // 2,
-            center_y=(3 * self.screen_height) // 4,  
-            width=self.screen_width,
-            height=self.screen_height // 2,
+            center_x=SCREEN_WIDTH // 2,
+            center_y=(3 * SCREEN_HEIGHT) // 4,  
+            width=SCREEN_WIDTH,
+            height=SCREEN_HEIGHT // 2,
             color=(71, 71, 71, 255)
         )
         
