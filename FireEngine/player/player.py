@@ -63,7 +63,7 @@ class player():
         self.plane_x = 0.0
         self.plane_y = 0.66
 
-        self.FOV = math.pi / 3 # Field of view (60 degrees)
+        self.FOV = math.pi / 4 # Field of view (60 degrees)
         self.original_FOV = self.FOV
 
         ##################

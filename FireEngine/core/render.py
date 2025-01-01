@@ -65,29 +65,32 @@ class render():
             # Apply camera transformation (inverse of camera matrix)
             inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
             transform_x = inv_det * (player.Player.dir_y * entity_x - player.Player.dir_x * entity_y)
-            transform_y = inv_det * (-player.Player.plane_y * entity_x + player.Player.plane_x * entity_y)
+            perp_distance = inv_det * (-player.Player.plane_y * entity_x + player.Player.plane_x * entity_y)
 
-            ray_angle = player.Player.player_angle - player.Player.FOV / 2
-            transform_y *= math.cos(ray_angle - player.Player.player_angle)
+            print(' ')
+            print(perp_distance)
 
-            # Check if the object is in front of the player (transform_y > 0)
-            if transform_y <= 0:
+            #perp_distance *= math.cos((player.Player.player_angle - player.Player.FOV / 2) - player.Player.player_angle)
+
+            print(perp_distance)
+
+            # Check if the object is in front of the player (perp_distance > 0)
+            if perp_distance <= 0:
                     continue
             
             # Step 3: Project the object onto the screen
-            entity_screen_x = int((SCREEN_WIDTH / 2) * (1 + transform_x / transform_y))
+            entity_screen_x = int((SCREEN_WIDTH / 2) * (1 + transform_x / perp_distance))
 
             # Calculate height and width of the object on screen
-            entity_height = abs(int(SCREEN_HEIGHT / transform_y))  # Correct scaling based on depth
-            entity_width = abs(int(SCREEN_HEIGHT / transform_y * self.aspect_ratio))
+            entity_height = abs(int(SCREEN_HEIGHT / perp_distance))  # Correct scaling based on depth
 
             # Calculate vertical start and end positions for drawing the object
             draw_start_y = max(0, SCREEN_HEIGHT // 2 - entity_height // 2)
             draw_end_y = min(SCREEN_HEIGHT, SCREEN_HEIGHT // 2 + entity_height // 2)
 
             # Calculate horizontal start and end positions for drawing the object
-            draw_start_x = int(entity_screen_x - (entity_width / 2))
-            draw_end_x = int(entity_screen_x + (entity_width / 2))
+            draw_start_x = int(entity_screen_x - (entity_height / 2))
+            draw_end_x = int(entity_screen_x + (entity_height / 2))
 
             texture = objs.texture
             texture_width = texture.width
@@ -108,11 +111,9 @@ class render():
 
             # Step 4: Draw each vertical stripe of the object if it's closer than walls (using ZBuffer)
             for stripe in range(draw_start_x, draw_end_x):
-                #print(f'{draw_start_x} {draw_end_x}')
-
                 # Only render if this part of the object is closer than any wall at this column
                 if stripe >= 0 and stripe < (SCREEN_WIDTH + (SCREEN_WIDTH / NUM_RAYS)) / (SCREEN_WIDTH / NUM_RAYS):
-                    if transform_y > 0 and transform_y < self.z_buffer[round(stripe)]: # Fix the minus one issues, causing one coloum to not be rendered, causing visual bugs                           
+                    if perp_distance > 0 and perp_distance < self.z_buffer[round(stripe)]: # Fix the minus one issues, causing one coloum to not be rendered, causing visual bugs                           
                         # Calculate texture column (X-axis) for current vertical stripe of object
                         percent_across_sprite = (stripe - draw_start_x) / float(draw_end_x - draw_start_x)
                         texture_column = int(percent_across_sprite * texture_width)
@@ -134,12 +135,12 @@ class render():
 
                         # Draw this slice of the texture on screen at this position
                         image = arcade.Sprite(
-                            center_x=stripe * (SCREEN_WIDTH / NUM_RAYS),
+                            center_x=stripe * SCREEN_WIDTH / NUM_RAYS,
                             center_y=(draw_start_y + draw_end_y) // 2,
                             texture=texture_slice,
                         )
                         
-                        image.width = SCREEN_WIDTH / NUM_RAYS * self.aspect_ratio
+                        image.width = SCREEN_WIDTH / NUM_RAYS
                         image.height = entity_height
                         self.draw_list.append(image)
 
@@ -212,11 +213,11 @@ class render():
                 continue
 
             if side == 0:
-                perp_wall_dist = max((map_x - player.Player.player_x + (1 - step_x) / 2) / (ray_dir_x + self.epsilon), self.epsilon)
+                perp_wall_dist = side_dist_x - delta_dist_x
             else:
-                perp_wall_dist = max((map_y - player.Player.player_y + (1 - step_y) / 2) / (ray_dir_y + self.epsilon), self.epsilon)
+                perp_wall_dist = side_dist_y - delta_dist_y
 
-            perp_wall_dist *= math.cos(ray_angle - player.Player.player_angle)
+            #perp_wall_dist *= math.cos(ray_angle - player.Player.player_angle)
 
             # Store this distance in ZBuffer for this column of pixels
             self.z_buffer.append(perp_wall_dist)
@@ -377,10 +378,10 @@ class render():
         SCREEN_WIDTH, SCREEN_HEIGHT = arcade.get_window().get_size()
         player.Player.FOV = math.pi / 3
 
-        #self.aspect_ratio = SCREEN_WIDTH / SCREEN_HEIGHT
+        self.aspect_ratio = SCREEN_WIDTH / SCREEN_HEIGHT
 
         # Recalculate FOV or other parameters if necessary
-        #player.Player.FOV = player.Player.original_FOV * self.aspect_ratio
+        player.Player.FOV = player.Player.original_FOV * self.aspect_ratio
 
     def on_render(self):
         import arcade
