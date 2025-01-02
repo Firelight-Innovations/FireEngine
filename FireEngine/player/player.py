@@ -63,7 +63,7 @@ class player():
         self.plane_x = 0.0
         self.plane_y = 0.66
 
-        self.FOV = math.pi / 4 # Field of view (60 degrees)
+        self.FOV = 2/6 # Field of view (60 degrees)
         self.original_FOV = self.FOV
 
         ##################
@@ -335,9 +335,6 @@ class player():
         self.weapon_x = resource_loading.weapons[self.weapon_id].weapon_x
         self.weapon_y = resource_loading.weapons[self.weapon_id].weapon_y  # Slightly lower than center for perspective
         self.weapon_scale = resource_loading.weapons[self.weapon_id].weapon_scale
-
-        self.x = render.SCREEN_WIDTH // self.weapon_x
-        self.y = render.SCREEN_HEIGHT // self.weapon_y
         
         # Bobbing effect variables
         self.bob_phase = 0  # Tracks the sine wave phase
@@ -414,15 +411,6 @@ class player():
         if self.turn_right:
             self.player_angle += turn_speed  # Turn right (clockwise)
 
-        # Update direction vector based on new angle
-        self.dir_x = math.cos(self.player_angle)
-        self.dir_y = math.sin(self.player_angle)
-
-        # Update camera plane based on new angle
-        # This keeps the FOV constant while rotating
-        self.plane_x = -(2/3) * math.sin(self.player_angle)  # Adjust -0.66 for FOV scaling
-        self.plane_y = (2/3) * math.cos(self.player_angle)
-
         # Check if player is moving
         is_moving = self.move_up or self.move_down or self.move_left or self.move_right
 
@@ -447,7 +435,7 @@ class player():
 
         self.gun_logic(delta_time=delta_time)
 
-                            # Fires the gun
+        # Fires the gun
         if self.is_automatic:
             if self.pressed:
                 self.shoot()
@@ -471,25 +459,39 @@ class player():
         if self.is_firing:
             current_frame = self.weapon_animation_frames[self.current_frame_index]
             sprite = arcade.Sprite(
-                center_x=self.x,
-                center_y=self.y,
                 texture=current_frame # type: ignore
             )
 
             sprite.width = resource_loading.weapons[self.weapon_id].texture_size_x
             sprite.height = resource_loading.weapons[self.weapon_id].texture_size_y
-            sprite.scale = resource_loading.weapons[self.weapon_id].weapon_scale
+            sprite.scale = resource_loading.weapons[self.weapon_id].weapon_scale * render.Render.aspect_ratio
+
+            # Centers sprite if width is even
+            if sprite.width % 2:
+                x = render.SCREEN_WIDTH // 2 - (sprite.scale // 2)
+            else:
+                x = render.SCREEN_WIDTH // 2
+
+            sprite.center_x = x
+            sprite.center_y = sprite.height / 2
         else:
             # Draw static gun texture when not shooting (optional)
             sprite = arcade.Sprite(
-                center_x=self.x,
-                center_y=self.y,
                 texture=self.weapon_animation_frames[0]  # Default static frame # type: ignore
             )
 
             sprite.width = resource_loading.weapons[self.weapon_id].texture_size_x
             sprite.height = resource_loading.weapons[self.weapon_id].texture_size_y
-            sprite.scale = resource_loading.weapons[self.weapon_id].weapon_scale
+            sprite.scale = resource_loading.weapons[self.weapon_id].weapon_scale * render.Render.aspect_ratio
+            
+            # Centers sprite if width is even
+            if sprite.width % 2:
+                x = render.SCREEN_WIDTH // 2 - (sprite.scale // 2)
+            else:
+                x = render.SCREEN_WIDTH // 2
+            
+            sprite.center_x = x
+            sprite.center_y = (sprite.height / 2) 
 
         sprite.draw(filter=arcade.gl.NEAREST)
             

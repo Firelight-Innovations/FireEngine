@@ -15,7 +15,7 @@ texture_buffer=1
 # ex: screen_width // weapon_x 
 weapon_x=2
 weapon_y=2.2
-weapon_scale=10
+weapon_scale=7
 
 damage_high=15
 damage_low=5

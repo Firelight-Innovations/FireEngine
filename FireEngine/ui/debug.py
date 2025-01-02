@@ -37,10 +37,11 @@ class debug():
         # Display FPS in top-right corner
         '''
         arcade.draw_text(
-            f"FPS: {self.fps:.1f} \nPlayer X: {player.Player.player_x:.1f} \nPlayer Y: {player.Player.player_y:.1f} \nPlayer Rot: {(player.Player.player_angle * (180 / math.pi)):.1f}º \nObjects on Screen: {render.Render.object_count}", 
-            10, 
-            render.SCREEN_HEIGHT - 20, 
-            arcade.color.BLACK
+            text=f"FPS: {self.fps:.1f} \nPlayer X: {player.Player.player_x:.1f} \nPlayer Y: {player.Player.player_y:.1f} \nPlayer Rot: {(player.Player.player_angle * (180 / math.pi)):.1f}º \nObjects on Screen: {render.Render.object_count}", 
+            start_x=10, 
+            start_y=render.SCREEN_HEIGHT - 20, 
+            color=arcade.color.BLACK,
+            anchor_x="center"
         )
         '''
 

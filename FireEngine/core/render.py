@@ -5,7 +5,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 RAYS_PER_100_PIXELS = 4
-NUM_RAYS = 400     # Number of rays casted for rendering
+NUM_RAYS = 500     # Number of rays casted for rendering
 
 MAX_DEPTH = 30
 
@@ -66,13 +66,6 @@ class render():
             inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
             transform_x = inv_det * (player.Player.dir_y * entity_x - player.Player.dir_x * entity_y)
             perp_distance = inv_det * (-player.Player.plane_y * entity_x + player.Player.plane_x * entity_y)
-
-            print(' ')
-            print(perp_distance)
-
-            #perp_distance *= math.cos((player.Player.player_angle - player.Player.FOV / 2) - player.Player.player_angle)
-
-            print(perp_distance)
 
             # Check if the object is in front of the player (perp_distance > 0)
             if perp_distance <= 0:
@@ -160,8 +153,10 @@ class render():
         # Cast each ray
         for ray in range(NUM_RAYS + 1):
             # Calculate direction of the current ray
-            ray_dir_x = math.cos(ray_angle)
-            ray_dir_y = math.sin(ray_angle)
+            # From -1 -> 1
+            mapped_value = (ray - 0) * (1 - -1) / ((NUM_RAYS + 1) - 0) + -1
+            ray_dir_x = player.Player.dir_x + player.Player.plane_x * mapped_value
+            ray_dir_y = player.Player.dir_y + player.Player.plane_y * mapped_value
 
             # Player's current position in grid units
             map_x = int(player.Player.player_x)
@@ -287,7 +282,7 @@ class render():
                 texture = texture_slice,
             )
             
-            sprite.width = SCREEN_WIDTH / NUM_RAYS
+            sprite.width = SCREEN_WIDTH / NUM_RAYS + 1
             sprite.height = line_height
 
             self.draw_list.append(sprite)
@@ -295,74 +290,83 @@ class render():
             ray_angle += player.Player.FOV / NUM_RAYS
 
         self.z_buffer.append(0)
-    
-    def draw_floor(self):
-        """Render textured floor using a raycasting-like approach."""
-        import main
-        import arcade
-        from tkinter import Image
 
-        # Load floor texture from disk
-        floor_tex = arcade.load_texture(self.floor_texture)
-        texture_image = floor_tex.image  # Get the Pillow image     object of the texture
-        texture_width, texture_height = floor_tex.width,    floor_tex.height
-    
-        # Create an empty image object for rendering the floor
-        floor_render = Image.new("RGBA", (SCREEN_WIDTH,     SCREEN_HEIGHT), (0, 0, 0, 255))
-        pixels = floor_render.load()  # Access pixel data for   manipulation
-    
-        # Precompute direction vectors for leftmost and     rightmost rays
-        rayDirX0 = main.Player.dir_x - main.Player.plane_x
-        rayDirY0 = main.Player.dir_y - main.Player.plane_y
-        rayDirX1 = main.Player.dir_x + main.Player.plane_x
-        rayDirY1 = main.Player.dir_y + main.Player.plane_y
-    
-        # Loop through each row below the horizon (bottom half  of the screen)
-        for y in range(0 + 1, SCREEN_HEIGHT):
-            # Current y position compared to the center of the  screen (the horizon)
-            p = y - 0 / 2
-    
-            # Vertical position of the camera
-            posZ = 0.5 * SCREEN_HEIGHT
-    
-            # Horizontal distance from the camera to the floor  for this row
+    def draw_floor_and_ceiling(self):
+        """Render textured floor using a raycasting-like approach."""
+        import arcade
+        import math
+        from PIL import Image
+        from FireEngine.player import player
+
+        # posZ is how high the camera is above the "floor"
+        posZ = 0.5 * SCREEN_HEIGHT
+
+        # Precompute left & right ray directions
+        rayDirX0 = player.Player.dir_x - player.Player.plane_x
+        rayDirY0 = player.Player.dir_y - player.Player.plane_y
+        rayDirX1 = player.Player.dir_x + player.Player.plane_x
+        rayDirY1 = player.Player.dir_y + player.Player.plane_y
+
+        # Load your floor and ceiling textures
+        floor_tex = arcade.load_texture("C:\\Users\\bjsea\\Documents\\Projects\\FireEngine\\Game\\Assets\\Textures\\Surfaces\\dirt.jpg")
+        ceil_tex = arcade.load_texture("C:\\Users\\bjsea\\Documents\\Projects\\FireEngine\\Game\\Assets\\Textures\\Surfaces\\cobble_stone.png")
+
+        # Create a Pillow image for manual pixel drawing
+        floor_render = Image.new("RGBA", (SCREEN_WIDTH, SCREEN_HEIGHT), (0, 0, 0, 255))
+        pixels = floor_render.load()
+
+        # For each row in the screen
+        for y in range(SCREEN_HEIGHT):
+            # p is the distance from the center/horizon
+            p = (y - (SCREEN_HEIGHT // 2))
+
+            # Avoid division by zero
+            if p == 0:
+                p = 0.000001
+
+            # rowDistance decides how far we are in the world
             rowDistance = posZ / p
-    
-            # Calculate real-world step vector for each x   (parallel to camera plane)
-            floorStepX = rowDistance * (rayDirX1 - rayDirX0) /  SCREEN_WIDTH
-            floorStepY = rowDistance * (rayDirY1 - rayDirY0) /  SCREEN_WIDTH
-    
-            # Real-world coordinates of the leftmost column
-            floorX = main.Player.player_x + rowDistance * rayDirX0
-            floorY = main.Player.player_y + rowDistance * rayDirY0
-    
-            # Loop through each column (pixel) in this row
+
+            # X,Y ceil/floor step increments
+            floorStepX = rowDistance * (rayDirX1 - rayDirX0) / SCREEN_WIDTH
+            floorStepY = rowDistance * (rayDirY1 - rayDirY0) / SCREEN_WIDTH
+
+            # Compute starting floorX/floorY
+            floorX = player.Player.player_x + rowDistance * rayDirX0
+            floorY = player.Player.player_y + rowDistance * rayDirY0
+
+            # Loop through each screen column
             for x in range(SCREEN_WIDTH):
-                # Get map cell coordinates (integer parts of    floorX and floorY)
+                # Determine the map tile
                 cellX = int(floorX)
                 cellY = int(floorY)
-    
-                # Get texture coordinates from fractional parts of floorX and floorY using bitwise operations
-                tx = int(texture_width * (floorX - int(floorX))) % texture_width
-                ty = int(texture_height * (floorY - int(floorY))) % texture_height
-    
-                # Increment real-world coordinates for the next     pixel
+
+                # Fractional parts for the texture
+                tx = int((floorX - cellX) * floor_tex.width) % floor_tex.width
+                ty = int((floorY - cellY) * floor_tex.height) % floor_tex.height
+
+                # Sample floor pixel
+                floor_color = floor_tex.image.getpixel((tx, ty))
+
+                # Same for ceiling (flip the row if you want symmetrical)
+                ceil_color = ceil_tex.image.getpixel((tx, ty))
+
+                pixels[x, y] = floor_color  # Draw floor
+                # Optionally draw ceiling on the symmetrical row:
+                # top_y = screen_height - y - 1
+                # pixels[x, top_y] = ceil_color
+
+                # Increment floorX/floorY for next column
                 floorX += floorStepX
                 floorY += floorStepY
-    
-                # Sample color from the texture at (tx, ty)
-                color = floor_tex.image.getpixel((tx, ty))
 
-                # Set pixel color in the output image at (x, y)
-                pixels[x, y] = color # type: ignore
-    
-        # Convert Pillow image back to an Arcade texture and    draw it on screen
+        # Convert the Pillow image into an Arcade texture and draw it
         arcade_texture = arcade.Texture(name="floor_render", image=floor_render)
         arcade.draw_texture_rectangle(
             center_x=SCREEN_WIDTH // 2,
-            center_y=SCREEN_HEIGHT // 4,
+            center_y=SCREEN_HEIGHT // 2,
             width=SCREEN_WIDTH,
-            height=SCREEN_HEIGHT // 2,
+            height=SCREEN_HEIGHT,
             texture=arcade_texture,
         )
 
@@ -383,12 +387,22 @@ class render():
         # Recalculate FOV or other parameters if necessary
         player.Player.FOV = player.Player.original_FOV * self.aspect_ratio
 
+        # Update camera plane based on new angle
+        # This keeps the FOV constant while rotating
+        player.Player.plane_x = -player.Player.FOV * math.sin(player.Player.player_angle)  # Adjust -0.66 for FOV scaling
+        player.Player.plane_y = player.Player.FOV * math.cos(player.Player.player_angle)
+
+        # Update direction vector based on new angle
+        player.Player.dir_x = math.cos(player.Player.player_angle)
+        player.Player.dir_y = math.sin(player.Player.player_angle)
+
     def on_render(self):
         import arcade
         import arcade.gl
         self.priority = 0
         self.z_buffer.clear()
 
+        '''
         # Draws floor
         arcade.draw_rectangle_filled(
             center_x=SCREEN_WIDTH // 2,
@@ -406,10 +420,12 @@ class render():
             height=SCREEN_HEIGHT // 2,
             color=(71, 71, 71, 255)
         )
-        
+        '''
+
         # Clears batch cache
         self.draw_list.clear()
         self.draw_walls()
+        self.draw_floor_and_ceiling()
         self.draw_objects()
 
         # Renders batched objects
