@@ -311,8 +311,8 @@ class render():
                 return shader_program
             
         # Load textures (as you do in your existing code)
-        self.floor_tex = arcade.load_texture("C:\\Users\\bjsea\\Documents\\Projects\\FireEngine\\Game\\Assets\\Textures\\Surfaces\\wolf_cobble_floor.png")
-        self.ceil_tex = arcade.load_texture("C:\\Users\\bjsea\\Documents\\Projects\\FireEngine\\Game\\Assets\\Textures\\Surfaces\\cobble_stone.png")
+        self.floor_tex = arcade.load_texture("C:\\Users\\bjsea\\Documents\\Projects\\FireEngine\\Game\\Assets\\Textures\\Surfaces\\floor.jpg")
+        self.ceil_tex = arcade.load_texture("C:\\Users\\bjsea\\Documents\\Projects\\FireEngine\\Game\\Assets\\Textures\\Surfaces\\ceiling.png")
         self.floor_shader = load_shader('C:\\Users\\bjsea\\Documents\\Projects\\FireEngine\\FireEngine\\core\\rendering\\viewport.vert', 'C:\\Users\\bjsea\\Documents\\Projects\\FireEngine\\FireEngine\\core\\rendering\\floor.frag')
         self.ceiling_shader = load_shader('C:\\Users\\bjsea\\Documents\\Projects\\FireEngine\\FireEngine\\core\\rendering\\viewport.vert',  'C:\\Users\\bjsea\\Documents\\Projects\\FireEngine\\FireEngine\\core\\rendering\\ceiling.frag')
 
