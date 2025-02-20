@@ -18,7 +18,6 @@ class GameLoop(arcade.Window):
         resource_loading.delete_all_files_in_directory(resource_loading.Cache)
         manager.Game.start()
         music = audio.music() # Inits & registers music object
-        print(resource_loading.weapons)
 
     def on_update(self, delta_time):
         """Update Game state."""
@@ -152,6 +151,7 @@ if __name__ == "__main__":
     from FireEngine.ui import game_ui
 
     # Import all files dynamically from the game
+    #from Game.code import death
 
     # Import all files dynamically from mods
 

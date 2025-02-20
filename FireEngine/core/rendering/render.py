@@ -1,3 +1,8 @@
+# Line 39 of texture_atlas.py
+# TEXCOORD_BUFFER_SIZE = 8192 * 2 * 2
+# Game is crashing from to small of a buffer size
+# Need better solution, temp fix however
+
 import math
 from FireEngine.core.decorators import singleton, register
 
@@ -385,6 +390,9 @@ class render():
 
     def on_start(self):
         import arcade
+        atlas_size = (4096 * 2, 4096 * 2)
+        custom_atlas = arcade.TextureAtlas(atlas_size, ctx=arcade.get_window().ctx)
+        self.draw_list = arcade.SpriteList(use_spatial_hash=True, is_static=False, capacity=100000, atlas=custom_atlas) # used for batching
         pass
 
     def on_update(self, delta_time):
@@ -414,7 +422,6 @@ class render():
         import arcade.gl
         self.priority = 0
         self.z_buffer.clear()
-        self.draw_list.clear()
 
         if not hasattr(Render, 'floor_tex'):
             self.load_shaders()
@@ -427,5 +434,7 @@ class render():
 
         # Renders batched objects
         self.draw_list.draw(filter=arcade.gl.NEAREST)
+        self.draw_list.clear()
+        self.draw_list.sprite_list.clear()
 
 Render = render()

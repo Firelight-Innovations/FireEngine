@@ -17,8 +17,8 @@ weapon_x=2
 weapon_y=1.9
 weapon_scale=7
 
-damage_high=40
-damage_low=20
+damage_high=25
+damage_low=10
 range=0.75
 
 max_ammo=10
