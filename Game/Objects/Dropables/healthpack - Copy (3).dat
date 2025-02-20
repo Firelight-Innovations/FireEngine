@@ -1,0 +1,31 @@
+[Info]
+type=dropable
+name=healthpack
+
+[Dropable Info]
+icon=H
+hitbox_x=0.2
+hitbox_y=0.2
+texture=Textures\Dropables\healthpack.png
+
+health=25
+max_health=10
+
+armor=0
+max_armor=0
+
+stamina=0
+max_stamina=0
+
+score=0
+
+give_weapon_id=2
+
+pistol_ammo=0
+shotgun_ammo=0
+rifle_ammo=0
+#types: light_burst, (custom types)
+pickup_vfx=light_burst 
+
+[Audio Info]
+pickup_sfx=Audio\Dropables\Healthpack\pickup.wav

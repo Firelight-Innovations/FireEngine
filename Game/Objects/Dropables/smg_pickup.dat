@@ -1,0 +1,31 @@
+[Info]
+type=dropable
+name=smg_pickup
+
+[Dropable Info]
+icon=)
+hitbox_x=0.2
+hitbox_y=0.2
+texture=Textures\Dropables\smg_pickup.png
+
+health=0
+max_health=0
+
+armor=0
+max_armor=0
+
+stamina=0
+max_stamina=0
+
+score=0
+
+give_weapon_id=3
+
+pistol_ammo=0
+shotgun_ammo=0
+rifle_ammo=0
+#types: light_burst, (custom types)
+pickup_vfx=light_burst 
+
+[Audio Info]
+pickup_sfx=Audio\Dropables\Healthpack\pickup.wav

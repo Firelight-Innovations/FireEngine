@@ -4,6 +4,59 @@ from FireEngine.core.decorators import register
 # Old music code
 # https://discord.com/channels/@me/625148109747650565/1322081064755396609
 
+@singleton
+@register
+class music():
+    def __init__(self):
+        import random
+        import os
+        from FireEngine.core.resources import resource_loading
+
+        # Audio Loading
+        self.songs_folder_path = os.path.join(resource_loading.Assets, "Audio\Music")
+        self.songs = self.get_music_files()
+        random.shuffle(self.songs)  # Shuffle the song list randomly
+        self.current_song_index = 0
+        self.current_player = None
+
+    def play_next_song(self):
+        """Play the next song in the shuffled list."""
+        import random
+        import arcade
+
+        if self.current_player is None or not self.current_player.playing:
+            if self.current_song_index < len(self.songs):
+                song_path = self.songs[self.current_song_index]
+                sound = arcade.load_sound(song_path, True)
+                self.current_player = arcade.play_sound(sound, volume=0.2) # type: ignore
+                self.current_song_index += 1
+            else:
+                self.songs = self.get_music_files()
+                random.shuffle(self.songs)  # Shuffle the song list randomly
+                self.current_song_index = 0
+                self.current_player = None
+
+    def get_music_files(self):
+        """Get all music files from the specified folder."""
+        import os
+
+        music_files = []
+        for file in os.listdir(self.songs_folder_path):
+            if file.endswith(('.mp3', '.wav')):  # Filter by audio file types
+                music_files.append(os.path.join(self.songs_folder_path, file))
+        return music_files
+
+    ###############
+    #   Updates   #
+    ###############
+
+    def on_update(self, delta_time):
+        self.play_next_song()
+
+###############################################
+# Spatial Audio 
+###############################################
+
 # Try to get spaital audio system working later
 @singleton
 @register

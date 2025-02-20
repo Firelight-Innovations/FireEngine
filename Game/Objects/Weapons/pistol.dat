@@ -24,7 +24,7 @@ range=10
 max_ammo=17
 start_ammo=68
 
-unlock_on_start=False
+unlock_on_start=True
 is_automatic=False
 loose_on_death=False
 uses_ammo=True
@@ -34,7 +34,7 @@ does_jam=False
 ammo_type=Pistol
 
 # From 0-9
-weapon_id=5
+weapon_id=2
 
 reload_time=1
 fire_time=0.3

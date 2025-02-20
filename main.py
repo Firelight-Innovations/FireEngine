@@ -17,12 +17,13 @@ class GameLoop(arcade.Window):
         # clears game cache
         resource_loading.delete_all_files_in_directory(resource_loading.Cache)
         manager.Game.start()
+        music = audio.music() # Inits & registers music object
+        print(resource_loading.weapons)
 
     def on_update(self, delta_time):
         """Update Game state."""
         manager.Game.update(delta_time)
         super().on_update(delta_time)  # Call parent class update if needed
-        print(len(entity.entities))
 
     def on_draw(self):
         """Render the screen."""

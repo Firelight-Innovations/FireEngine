@@ -1,0 +1,40 @@
+[Info]
+type=entity
+name=ss_guard
+
+[Entity Info]
+icon=!
+hitbox_x=0.25
+hitbox_y=0.25
+animation=Textures\Entities\ss_guard.png
+
+# Size of each object on sprite sheet (x,y)
+texture_size=64,64
+texture_buffer=1
+
+speed=1
+#types: pistol, shotgun, rifle, (custom types)
+weapon=rifle
+health=200
+armor=0
+damage_low=5
+damage_high=20
+fire_range=5
+hit_chance_close=0.8
+hit_chance_far=0.2
+fire_freq_low=0.15
+fire_freq_high=0.07
+
+[AI Info]
+view_range=15
+#types: raycast, a_star, communicative, (custom types)
+ai_system=raycast
+patrol_wait=2
+
+[Audio Info]
+death_sfx=Audio\Entities\SS Guard\Death
+gore_sfx=Audio\Entities\SS Guard\Gore
+scream_sfx=Audio\Entities\SS Guard\Scream
+pistol_sfx=Audio\Entities\SS Guard\Gun\fire.wav
+shotgun_sfx=Audio\Entities\SS Guard\Gun
+rifle_sfx=Audio\Entities\SS Guard\Gun

@@ -6,7 +6,7 @@ name=guard
 icon=$
 hitbox_x=0.25
 hitbox_y=0.25
-animation=Textures\Entities\Guard\guard_sheet.png
+animation=Textures\Entities\guard.png
 
 # Size of each object on sprite sheet (x,y)
 texture_size=64,64

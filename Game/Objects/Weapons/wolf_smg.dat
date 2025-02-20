@@ -24,7 +24,7 @@ range=7
 max_ammo=10
 start_ammo=50
 
-unlock_on_start=True
+unlock_on_start=False
 is_automatic=True
 loose_on_death=False
 uses_ammo=True
