@@ -450,7 +450,7 @@ class scene_loader:
 
     def on_start(self):
         from FireEngine.core.resources import resource_loading
-        self.load_scene_data()
-        self.load_scene('Default Scene')
+        self.load_scene_data() 
+        self.load_scene('Test Scene')
 
 SceneLoader = scene_loader()

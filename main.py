@@ -7,9 +7,6 @@ import arcade.color
 import arcade.color
 import arcade.key
 
-import arcade.key
-import arcade.key
-
 # Constants
 SCREEN_TITLE = "FireEngine Kraken"
 
@@ -121,7 +118,8 @@ from FireEngine.core.resources import data_containers
 
 def main():
     """Main function to set up and run the Game."""
-    game = GameLoop()
+    global game
+    manager.game_loop = GameLoop()
     arcade.run()
 
 def signal_handler(self, sig, frame):
@@ -141,7 +139,7 @@ if __name__ == "__main__":
     #man = multiprocess.createManager()
 
     #print(f'Multi: {man}')
-    from FireEngine.core import render
+    from FireEngine.core.rendering import render
     from FireEngine.objects import entity
     from FireEngine.objects import sprite
     from FireEngine.player import player

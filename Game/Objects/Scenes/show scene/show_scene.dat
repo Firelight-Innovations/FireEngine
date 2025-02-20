@@ -1,0 +1,8 @@
+[Info]
+type=scene
+name=Show Scene
+
+[Scene Info]
+difficulty=0
+scene_order=1
+description=For showing off the game so far.

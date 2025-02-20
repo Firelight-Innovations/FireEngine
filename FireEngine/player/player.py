@@ -7,7 +7,7 @@ from FireEngine.core.decorators import register
 class player():
     def __init__(self):
         from FireEngine.core import scene
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
         from FireEngine.core.resources import resource_loading
         import math
         import os
@@ -184,7 +184,7 @@ class player():
             arcade.play_sound(random_sound, volume=0.2)  #  Adjust volume as needed
 
     def gun_logic(self, delta_time):
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
         import math
 
         # Bobs gun as player moves
@@ -219,7 +219,7 @@ class player():
         from FireEngine.objects import entity
         from FireEngine.objects import sprite
         from FireEngine.core import scene
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
         from FireEngine.core.resources import resource_loading
         import math
         import random
@@ -328,7 +328,7 @@ class player():
 
     def load_weapon(self):
         from FireEngine.core.resources import resource_loading
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
 
         # Load weapon stats from memory
         # Gun position variables
@@ -359,7 +359,7 @@ class player():
     ########################
 
     def on_start(self):
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
         from FireEngine.core.resources import resource_loading
         ######################
         #   GUN ATTRIBUTES   #
@@ -448,7 +448,7 @@ class player():
                 self.allow_shoot = True
 
     def on_render(self):
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
         import arcade
         import arcade.gl
         from FireEngine.core.resources import resource_loading
@@ -509,7 +509,7 @@ class player():
 
     def on_change_weapon(self, id):
         from FireEngine.core.resources import resource_loading
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
         if self.unlocked_weapons[id] == True:
            self.weapon_id = id
         else:

@@ -18,7 +18,7 @@ class debug():
     def draw_grid(self):
         import main
         from FireEngine.core import scene
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
         # Define the grid size (matches TILE_SIZE)
 
         # Draw horizontal lines
@@ -31,7 +31,7 @@ class debug():
 
     def draw_stats(self):
         """Draw FPS counter and general game stats in the top-right corner."""
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
         from FireEngine.player import player
         
         # Display FPS in top-right corner
@@ -47,7 +47,7 @@ class debug():
 
     def draw_map(self):
         from FireEngine.core import scene
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
 
         for row_index, row in enumerate(scene.scene_data):
             for col_index, tile in enumerate(row):
@@ -85,7 +85,7 @@ class debug():
     def on_render(self):
         from FireEngine.player import player 
         from FireEngine.core import scene
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
 
         self.priority = 4
 

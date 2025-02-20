@@ -19,7 +19,7 @@ max_stamina=0
 
 score=0
 
-give_weapon_id=4
+give_weapon_id=2
 
 pistol_ammo=0
 shotgun_ammo=0

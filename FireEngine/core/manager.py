@@ -1,6 +1,9 @@
 registered_objects = []
 
 from FireEngine.core.decorators import singleton
+import arcade
+
+game_loop = arcade.Window
 
 @singleton
 class game_manager:

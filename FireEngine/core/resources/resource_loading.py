@@ -6,6 +6,7 @@ Assets = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.di
 Objects = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Objects")
 Code = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Code")
 Cache = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "Game\\Cache")
+Shaders = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "FireEngine\\core\\rendering")
 
 EncodingType = None
 

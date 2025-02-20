@@ -30,7 +30,7 @@ class game_ui():
         self.draw_crosshair()
 
     def draw_crosshair(self):
-        from FireEngine.core import render
+        from FireEngine.core.rendering import render
         crosshair_tex = arcade.load_texture(self.crosshair)
 
         arcade.draw_texture_rectangle(
