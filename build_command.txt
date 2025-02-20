@@ -1,0 +1,1 @@
+pyinstaller --noconsole --add-data "Game/Assets;Game/Assets" --add-data "Game/Objects;Game/Objects" --name PROJECT_NAME main.py
