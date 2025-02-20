@@ -6,7 +6,7 @@ from FireEngine.core.decorators import singleton
 from FireEngine.core.decorators import register
 
 @singleton
-@register
+#@register
 class debug():
     def __init__(self):
         self.last_time = time.time()  # Store the time of the last frame

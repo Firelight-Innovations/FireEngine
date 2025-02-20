@@ -19,7 +19,7 @@ class game_ui():
 
         # Draws health
         arcade.draw_text(
-            f'Health: {round(player.Player.health)}',
+            f'Health: {round(player.Player.health)} | Score: {round(player.Player.score)}',
             20,
             20,
             arcade.color.BLACK,

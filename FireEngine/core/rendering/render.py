@@ -27,7 +27,7 @@ class render():
 
         # Initialize ZBuffer as a list with length equal to screen width
         self.z_buffer = [float('inf')] * SCREEN_WIDTH
-        self.draw_list = arcade.SpriteList() # used for batching
+        self.draw_list = arcade.SpriteList(use_spatial_hash=True, is_static=False, capacity=100000) # used for batching
 
         self.player = player.Player
         self.inv_det = 1.0 / (player.Player.plane_x * player.Player.dir_y - player.Player.dir_x * player.Player.plane_y)
@@ -414,6 +414,7 @@ class render():
         import arcade.gl
         self.priority = 0
         self.z_buffer.clear()
+        self.draw_list.clear()
 
         if not hasattr(Render, 'floor_tex'):
             self.load_shaders()
