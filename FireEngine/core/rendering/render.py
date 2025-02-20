@@ -5,7 +5,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 RAYS_PER_100_PIXELS = 4
-NUM_RAYS = 500     # Number of rays casted for rendering
+NUM_RAYS = 250     # Number of rays casted for rendering
 
 MAX_DEPTH = 30
 

@@ -22,6 +22,7 @@ class GameLoop(arcade.Window):
         """Update Game state."""
         manager.Game.update(delta_time)
         super().on_update(delta_time)  # Call parent class update if needed
+        print(len(entity.entities))
 
     def on_draw(self):
         """Render the screen."""

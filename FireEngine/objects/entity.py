@@ -285,7 +285,7 @@ class entity:
                 for dx in range(-5, 6):
                     target_x = int(self.x + dx)
                     target_y = int(self.y + dy)
-                    if self.can_see(target_x, target_y): #and scene.scene_data[target_y][target_x] == ' ':
+                    if self.can_see(target_x, target_y) and scene.scene_data[target_y][target_x] == ' ':
                         valid_tiles.append((target_x + 0.5, target_y + 0.5))
     
             if valid_tiles:
