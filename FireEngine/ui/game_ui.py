@@ -10,7 +10,7 @@ from FireEngine.core.resources import resource_loading
 class game_ui():
     def __init__(self):
         # UI Texture Loading
-        self.crosshair = os.path.join(resource_loading.Assets, "Textures\\UI\\crosshair.png")
+        self.crosshair = os.path.join(resource_loading.ASSETS, "Textures\\UI\\crosshair.png")
 
     def on_render(self):
         from FireEngine.player import player

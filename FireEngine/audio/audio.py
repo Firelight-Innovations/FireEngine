@@ -13,7 +13,7 @@ class music():
         from FireEngine.core.resources import resource_loading
 
         # Audio Loading
-        self.songs_folder_path = os.path.join(resource_loading.Assets, "Audio\Music")
+        self.songs_folder_path = os.path.join(resource_loading.ASSETS, "Audio\Music")
         self.songs = self.get_music_files()
         random.shuffle(self.songs)  # Shuffle the song list randomly
         self.current_song_index = 0

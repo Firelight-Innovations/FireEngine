@@ -74,7 +74,7 @@ class player():
         self.frame_time = 0.0
 
         # Footstep sounds
-        self.footsteps_folder_path = os.path.join(resource_loading.Assets, "Audio\\Player\\Footsteps")
+        self.footsteps_folder_path = os.path.join(resource_loading.ASSETS, "Audio\\Player\\Footsteps")
         self.footstep_sounds = resource_loading.load_folder_sounds(self.footsteps_folder_path)
         self.last_footstep_time = 0  # To manage cooldown between footsteps
         self.footstep_cooldown = 0.4  # Minimum time between footsteps (in seconds)

@@ -32,7 +32,7 @@ class scene_loader:
         # Find file with matching scene name
         # Load scene data
 
-        scene_path = os.path.join(resource_loading.Objects, "Scenes")
+        scene_path = os.path.join(resource_loading.OBJECTS, "Scenes")
 
         # Walk through the directory and its subdirectories
         for root, dirs, files in os.walk(scene_path):
@@ -57,7 +57,7 @@ class scene_loader:
                             scene_data.append(line.replace("\n", ""))
 
                     # Load data from .scene & .dat into memory 
-                    resource_loading.scenes[scene_name] = data_containers.scene(
+                    resource_loading.scenes[scene_name] = data_containers.Scene(
                         name = scene_name,
                         difficulty = data_file['Scene Info']['difficulty'],
                         order = data_file['Scene Info']['scene_order'],
@@ -70,7 +70,7 @@ class scene_loader:
         from FireEngine.core.resources import resource_loading
         from FireEngine.core.resources import data_containers
 
-        texture_path = os.path.join(resource_loading.Objects, "Textures")
+        texture_path = os.path.join(resource_loading.OBJECTS, "Textures")
 
         for file in os.listdir(texture_path):
             if file.endswith('.dat'):  # Check if the file is a .dat file
@@ -84,7 +84,7 @@ class scene_loader:
                 texture_icon = data_file['Texture Info']['icon']
 
                 # Load from .dat into memory 
-                resource_loading.textures[texture_icon] = data_containers.texture(
+                resource_loading.textures[texture_icon] = data_containers.Texture(
                     name = data_file['Info']['name'],
                     location= data_file['Texture Info']['location'],
                     icon= texture_icon,
@@ -97,7 +97,7 @@ class scene_loader:
         from FireEngine.core.resources import resource_loading
         from FireEngine.core.resources import data_containers
 
-        texture_path = os.path.join(resource_loading.Objects, "Doors")
+        texture_path = os.path.join(resource_loading.OBJECTS, "Doors")
 
         for file in os.listdir(texture_path):
             if file.endswith('.dat'):  # Check if the file is a .dat file
@@ -118,7 +118,7 @@ class scene_loader:
                 }
 
                 # Load from .dat into memory 
-                resource_loading.doors[name] = data_containers.door(
+                resource_loading.doors[name] = data_containers.Door(
                     name = name,
                     close_location = data_file['Texture Info']['close_location'],
                     open_location = data_file['Texture Info']['open_location'],
@@ -134,7 +134,7 @@ class scene_loader:
         from FireEngine.core.resources import resource_loading
         from FireEngine.core.resources import data_containers
 
-        texture_path = os.path.join(resource_loading.Objects, "Entities")
+        texture_path = os.path.join(resource_loading.OBJECTS, "Entities")
 
         for file in os.listdir(texture_path):
             if file.endswith('.dat'):  # Check if the file is a .dat file
@@ -181,7 +181,7 @@ class scene_loader:
                 }
 
                 # Load from .dat into memory 
-                resource_loading.entities[name] = data_containers.entity(
+                resource_loading.entities[name] = data_containers.Entity(
                     name = name,
                     icon = icon,
                     data = data
@@ -192,7 +192,7 @@ class scene_loader:
         from FireEngine.core.resources import resource_loading
         from FireEngine.core.resources import data_containers
 
-        texture_path = os.path.join(resource_loading.Objects, "Sprites")
+        texture_path = os.path.join(resource_loading.OBJECTS, "Sprites")
 
         for file in os.listdir(texture_path):
             if file.endswith('.dat'):  # Check if the file is a .dat file
@@ -227,7 +227,7 @@ class scene_loader:
                 }  
 
                 # Load from .dat into memory 
-                resource_loading.sprites[name] = data_containers.sprite(
+                resource_loading.sprites[name] = data_containers.Sprite(
                     name = name,
                     icon = icon,
                     data = data
@@ -238,7 +238,7 @@ class scene_loader:
         from FireEngine.core.resources import resource_loading
         from FireEngine.core.resources import data_containers
 
-        texture_path = os.path.join(resource_loading.Objects, "Weapons")
+        texture_path = os.path.join(resource_loading.OBJECTS, "Weapons")
 
         for file in os.listdir(texture_path):
             if file.endswith('.dat'):  # Check if the file is a .dat file
@@ -298,7 +298,7 @@ class scene_loader:
                 }  
 
                 # Load from .dat into memory 
-                resource_loading.weapons[data['weapon_id']] = data_containers.weapon(
+                resource_loading.weapons[data['weapon_id']] = data_containers.Weapon(
                     name = name,
                     data = data
                 )
@@ -308,7 +308,7 @@ class scene_loader:
         from FireEngine.core.resources import resource_loading
         from FireEngine.core.resources import data_containers
 
-        texture_path = os.path.join(resource_loading.Objects, "Dropables")
+        texture_path = os.path.join(resource_loading.OBJECTS, "Dropables")
 
         for file in os.listdir(texture_path):
             if file.endswith('.dat'):  # Check if the file is a .dat file
@@ -350,7 +350,7 @@ class scene_loader:
                 }  
 
                 # Load from .dat into memory 
-                resource_loading.dropables[name] = data_containers.dropable(
+                resource_loading.dropables[name] = data_containers.Droppable(
                     name = name,
                     icon = icon,
                     data = data
@@ -395,7 +395,7 @@ class scene_loader:
                 for x in range(len(scene.scene_data[y])):
                     if scene.scene_data[y][x] == resource_loading.entities[enti].icon:
                         scene.scene_data[y] = scene.scene_data[y][:x] + ' ' + scene.scene_data[y][x+1:]
-                        entity.entity(x, y, 0, _entity=resource_loading.entities[enti]) # Instantiates a new entity object, inherits from the entity class
+                        entity.Entity(x, y, 0, entity=resource_loading.entities[enti]) # Instantiates a new entity object, inherits from the entity class
 
         #########################
         #   Loads sprite data   #

@@ -30,7 +30,7 @@ class sprite:
         self.load_animations()
 
         # Load specific death sound
-        self.hit_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.Assets, _sprite.hit_sfx))
+        self.hit_sounds = resource_loading.load_folder_sounds(os.path.join(resource_loading.ASSETS, _sprite.hit_sfx))
 
     def load_animations(self):
         '''Loads all animations and textures from a sprite sheet'''
@@ -119,7 +119,7 @@ class sprite:
 
             image = texture.image
 
-            output_folder = os.path.join(resource_loading.Cache)
+            output_folder = os.path.join(resource_loading.CACHE)
             output_file = f"{height * random.randint(0, 100000)}.png"
 
             # Ensure the folder exists
